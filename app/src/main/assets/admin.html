@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esp Admin Team</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { bg: '#09090B', panel: '#18181A', border: '#27272A' },
+                        orange: { 500: '#F49E0B', 600: '#D98A00', hover: '#FFB640' }
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #09090B; color: #ffffff; font-family: 'Poppins', sans-serif; overflow: hidden; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #18181A; }
+        ::-webkit-scrollbar-thumb { background: #F49E0B; border-radius: 4px; }
+        .flat-input { background-color: #09090B; border: 1px solid #27272A; color: #ffffff; padding: 12px 16px; width: 100%; outline: none; transition: all 0.3s; border-radius: 8px; font-size: 0.9rem; }
+        .flat-input:focus { border-color: #F49E0B; box-shadow: 0 0 0 2px rgba(244,158,11,0.2); }
+        .flat-btn { background-color: #F49E0B; color: #ffffff; padding: 12px 24px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .flat-btn:hover { background-color: #FFB640; transform: translateY(-1px); }
+        .flat-btn:active { transform: scale(0.98); }
+        .flat-btn-outline { background-color: transparent; border: 1px solid #F49E0B; color: #F49E0B; padding: 10px 20px; border-radius: 8px; transition: all 0.2s; cursor: pointer; }
+        .flat-btn-outline:hover { background-color: #F49E0B; color: #ffffff; }
+        .flat-table-container { background-color: #18181A; border-radius: 12px; overflow-x: auto; border: 1px solid #27272A; }
+        .flat-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        .flat-table th, .flat-table td { border-bottom: 1px solid #27272A; padding: 14px 16px; text-align: left; vertical-align: middle; }
+        .flat-table th { background-color: #1f1f21; color: #F49E0B; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; }
+        .flat-table tr:hover td { background-color: #1a1a1c; }
+        .flat-table td { font-size: 0.9rem; color: #e4e4e7; }
+        .nav-link { border-radius: 8px; margin: 4px 12px; color: #A1A1AA; transition: all 0.2s ease-in-out; cursor: pointer; display: flex; align-items: center; padding: 12px 16px; text-decoration: none; user-select: none; }
+        .nav-link.active { background-color: #F49E0B; color: #ffffff; box-shadow: 0 4px 10px rgba(244, 158, 11, 0.2); }
+        .nav-link:hover:not(.active) { background-color: #27272A; color: #F49E0B; }
+        .card { background-color: #18181A; border-radius: 12px; padding: 24px; border: 1px solid #27272A; }
+        #loading-spinner { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 9999; display: none; }
+        .spinner { border: 4px solid rgba(244, 158, 11, 0.1); border-left-color: #F49E0B; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+        .user-card { transition: all 0.3s ease; }
+        .user-card:hover { border-color: #F49E0B; box-shadow: 0 4px 15px rgba(244,158,11,0.1); transform: translateY(-2px); }
+        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body oncontextmenu="return false" style="touch-action: none; -webkit-user-select: none; user-select: none; overscroll-behavior: none;">
+    <script>
+        document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+    </script>
+
+    <div id="splash-screen" class="fixed inset-0 bg-[#09090B] z-[10000] flex flex-col items-center justify-center transition-opacity duration-700">
+        <img src="https://i.ibb.co/8LR7zX37/Background-Eraser-20260710-003014620.png" alt="Logo" class="w-32 h-32 md:w-40 md:h-40 object-contain animate-pulse mb-6 rounded-full border-4 border-orange-500 shadow-[0_0_20px_rgba(244,158,11,0.5)]">
+        <div class="spinner"></div>
+        <p class="text-orange-500 font-bold mt-5 tracking-[0.2em] text-lg md:text-xl">Esp Admin 2.0</p>
+    </div>
+
+    <div id="loading-spinner"><div class="spinner"></div></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/80 z-40 hidden lg:hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
+
+    <aside class="w-72 bg-dark-panel border-r border-dark-border flex flex-col fixed inset-y-0 left-0 z-50 lg:static transition-transform transform -translate-x-full lg:translate-x-0 shadow-2xl" id="sidebar">
+        <div class="p-6 border-b border-dark-border flex items-center justify-between relative">
+            <h1 class="text-2xl font-extrabold text-orange-500 tracking-widest flex items-center gap-2">
+                ESP <span class="text-white">ADMIN 2.0</span>
+            </h1>
+            <button class="lg:hidden text-gray-400 hover:text-white" onclick="toggleSidebar()"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4 scroll-smooth">
+            <div onclick="switchView('dashboard')" id="nav-dashboard" class="nav-link active"><i class="fas fa-chart-pie w-8 text-center"></i> Dashboard</div>
+            <div onclick="switchView('settings')" id="nav-settings" class="nav-link"><i class="fas fa-cog w-8 text-center"></i> Settings</div>
+            <div onclick="switchView('categories')" id="nav-categories" class="nav-link"><i class="fas fa-tags w-8 text-center"></i> Categories</div>
+            <div onclick="switchView('services')" id="nav-services" class="nav-link"><i class="fas fa-gamepad w-8 text-center"></i> Services & Games</div>
+            <div onclick="switchView('orders')" id="nav-orders" class="nav-link"><i class="fas fa-shopping-cart w-8 text-center"></i> Orders</div>
+            <div onclick="switchView('deposits')" id="nav-deposits" class="nav-link"><i class="fas fa-wallet w-8 text-center"></i> Deposits</div>
+            <div onclick="switchView('users')" id="nav-users" class="nav-link"><i class="fas fa-users w-8 text-center"></i> Users & Devices</div>
+            <div onclick="switchView('push-notif')" id="nav-push-notif" class="nav-link"><i class="fas fa-bell w-8 text-center"></i> Push Notifications</div>
+            <div onclick="switchView('unpin')" id="nav-unpin" class="nav-link"><i class="fas fa-key w-8 text-center"></i> Unpin Code</div>
+            <div onclick="switchView('tutorials')" id="nav-tutorials" class="nav-link"><i class="fas fa-video w-8 text-center"></i> Tutorials</div>
+            <div onclick="switchView('banners')" id="nav-banners" class="nav-link"><i class="fas fa-image w-8 text-center"></i> Banners</div>
+            <div onclick="switchView('popup')" id="nav-popup" class="nav-link"><i class="fas fa-bullhorn w-8 text-center"></i> Launch Popup</div>
+        </nav>
+        <div class="p-4 border-t border-dark-border bg-dark-bg/50">
+            <button onclick="refreshData()" class="w-full bg-dark-panel border border-dark-border hover:border-orange-500 text-gray-300 hover:text-orange-500 flex items-center justify-center py-3 text-sm font-semibold rounded-lg transition-all active:scale-95 shadow-sm">
+                <i class="fas fa-sync-alt mr-2"></i> Refresh Data
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-dark-bg h-screen overflow-hidden relative" id="main-content">
+        <header class="bg-dark-panel border-b border-dark-border p-4 md:px-8 md:py-5 flex justify-between items-center z-10 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button class="lg:hidden text-orange-500 text-2xl focus:outline-none p-1" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <div>
+                    <h2 id="page-title" class="text-xl md:text-2xl font-bold text-white tracking-wide">Dashboard</h2>
+                    <p id="page-desc" class="text-gray-400 text-xs md:text-sm mt-0.5">Administrator Console</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <div class="text-sm font-bold text-white">Super Admin</div>
+                    <div class="text-xs text-orange-500 font-medium"><i class="fas fa-circle text-[8px] mr-1 text-green-500"></i>Online Status</div>
+                </div>
+                <img src="https://i.ibb.co/8LR7zX37/Background-Eraser-20260710-003014620.png" alt="Admin" class="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover bg-black border-2 border-orange-500 shadow-[0_0_15px_rgba(244,158,11,0.15)] flex-shrink-0">
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth relative">
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                    <div class="card flex items-center hover:border-orange-500/50 transition-colors">
+                        <div class="p-4 bg-orange-500/10 rounded-xl mr-4 flex-shrink-0"><i class="fas fa-users text-2xl text-orange-500"></i></div>
+                        <div><div class="text-gray-400 text-xs uppercase tracking-wider font-semibold mb-1">Total Users</div><div class="text-2xl md:text-3xl font-bold text-white" id="dash-users">0</div></div>
+                    </div>
+                    <div class="card flex items-center hover:border-blue-500/50 transition-colors">
+                        <div class="p-4 bg-blue-500/10 rounded-xl mr-4 flex-shrink-0"><i class="fas fa-shopping-bag text-2xl text-blue-500"></i></div>
+                        <div><div class="text-gray-400 text-xs uppercase tracking-wider font-semibold mb-1">Total Orders</div><div class="text-2xl md:text-3xl font-bold text-white" id="dash-orders">0</div></div>
+                    </div>
+                    <div class="card flex items-center hover:border-green-500/50 transition-colors">
+                        <div class="p-4 bg-green-500/10 rounded-xl mr-4 flex-shrink-0"><i class="fas fa-hand-holding-usd text-2xl text-green-500"></i></div>
+                        <div><div class="text-gray-400 text-xs uppercase tracking-wider font-semibold mb-1">Pending Deposits</div><div class="text-2xl md:text-3xl font-bold text-white" id="dash-deposits">0</div></div>
+                    </div>
+                    <div class="card flex items-center hover:border-purple-500/50 transition-colors">
+                        <div class="p-4 bg-purple-500/10 rounded-xl mr-4 flex-shrink-0"><i class="fas fa-chart-line text-2xl text-purple-500"></i></div>
+                        <div><div class="text-gray-400 text-xs uppercase tracking-wider font-semibold mb-1">Total Revenue</div><div class="text-2xl md:text-3xl font-bold text-white" id="dash-revenue">৳0</div></div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-dark-border pb-3">
+                        <i class="fas fa-th-large text-orange-500"></i> Esp Admin Control Panel
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <div onclick="switchView('settings')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-cog text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Settings</span>
+                        </div>
+                        <div onclick="switchView('categories')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-tags text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Categories</span>
+                        </div>
+                        <div onclick="switchView('services')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-gamepad text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Services</span>
+                        </div>
+                        <div onclick="switchView('orders')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-shopping-cart text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Orders</span>
+                        </div>
+                        <div onclick="switchView('deposits')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-wallet text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Deposits</span>
+                        </div>
+                        <div onclick="switchView('users')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-users text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Users DB</span>
+                        </div>
+                        <div onclick="switchView('push-notif')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-paper-plane text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Push Notifs</span>
+                        </div>
+                        <div onclick="switchView('banners')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-image text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">Banners</span>
+                        </div>
+                        <div onclick="switchView('popup')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
+                            <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-bullhorn text-xl text-gray-400 group-hover:text-orange-500"></i></div>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white">App Popup</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view-section hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-white mb-5 border-b border-dark-border pb-3">General Info & Referral Bonus</h3>
+                        <div class="space-y-4">
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Site Name</label><input type="text" id="set-sitename" class="flat-input"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Logo URL</label><input type="text" id="set-logo" class="flat-input"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Notice Box</label><textarea id="set-notice" class="flat-input h-24 resize-none"></textarea></div>
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">App Download Link</label><input type="text" id="set-applink" class="flat-input"></div>
+                            <div><label class="block text-xs text-orange-500 mb-1 font-semibold uppercase">Referral Bonus Amount (৳)</label><input type="number" id="set-referral-bonus" placeholder="10" class="flat-input"></div>
+                            <button onclick="saveSettings('general')" class="flat-btn w-full mt-2"><i class="fas fa-save"></i> Save General Info & Referral Bonus</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-white mb-5 border-b border-dark-border pb-3">Social Links (App Footer Link)</h3>
+                        <div class="space-y-4">
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">WhatsApp Number</label><input type="text" id="set-whatsapp" class="flat-input" placeholder="8801..."></div>
+                            <div><label class="block text-xs text-orange-500 mb-1 font-semibold uppercase">Telegram Link (Footer Button Link)</label><input type="text" id="set-telegram" class="flat-input"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Facebook Link</label><input type="text" id="set-facebook" class="flat-input"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">YouTube Link</label><input type="text" id="set-youtube" class="flat-input"></div>
+                            <button onclick="saveSettings('social')" class="flat-btn w-full mt-2"><i class="fas fa-save"></i> Save Social Links</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-white mb-5 border-b border-dark-border pb-3">Payment Admin Numbers</h3>
+                        <div class="space-y-4">
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">bKash Number</label><input type="text" id="set-bkash" class="flat-input"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Nagad Number</label><input type="text" id="set-nagad" class="flat-input"></div>
+                            <button onclick="saveSettings('payment')" class="flat-btn w-full mt-2"><i class="fas fa-save"></i> Save Payment Numbers</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-white mb-5 border-b border-dark-border pb-3">Advanced Config</h3>
+                        <div class="space-y-4">
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">How To Add Money (Video ID)</label><input type="text" id="set-tutorial-vid" class="flat-input" placeholder="dQw4w9WgXcQ"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Promo Image URL</label><input type="text" id="set-promo-img" class="flat-input"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Promo Link</label><input type="text" id="set-promo-link" class="flat-input"></div>
+                            <div class="flex items-center gap-3 p-4 bg-dark-bg rounded-lg border border-dark-border mt-2">
+                                <input type="checkbox" id="set-autopay" class="w-5 h-5 accent-orange-500 rounded cursor-pointer">
+                                <label for="set-autopay" class="text-sm font-bold text-white cursor-pointer select-none">Enable Auto Pay System</label>
+                            </div>
+                            <div class="border-t border-dark-border pt-4 mt-2">
+                                <h4 class="text-sm font-bold text-orange-500 mb-3">Auto TopUp API Setup</h4>
+                                <div class="space-y-3">
+                                    <input type="text" id="set-api-key" placeholder="API Key" class="flat-input">
+                                    <input type="text" id="set-api-url" placeholder="API URL" class="flat-input">
+                                    <input type="text" id="set-api-callback" placeholder="Callback URL" class="flat-input">
+                                </div>
+                            </div>
+                            <button onclick="saveSettings('advanced')" class="flat-btn w-full mt-2"><i class="fas fa-save"></i> Save Advanced Config</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories View -->
+            <div id="view-categories" class="view-section hidden">
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Add New Category</h3>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input type="text" id="cat-name" placeholder="Category Name" class="flat-input flex-1">
+                        <input type="number" id="cat-slot" placeholder="Sort Slot (e.g. 1)" class="flat-input w-full md:w-48">
+                        <button onclick="addCategory()" class="flat-btn whitespace-nowrap"><i class="fas fa-plus"></i> Add Category</button>
+                    </div>
+                </div>
+                <div class="flat-table-container">
+                    <table class="flat-table">
+                        <thead><tr><th>Category Name</th><th>Slot</th><th class="w-24 text-center">Action</th></tr></thead>
+                        <tbody id="cat-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Services View -->
+            <div id="view-services" class="view-section hidden">
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Create Service/Game</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="srv-name" placeholder="Service Name" class="flat-input">
+                        <input type="text" id="srv-image" placeholder="Image URL" class="flat-input">
+                        <select id="srv-category" class="flat-input"><option value="">Select Category</option></select>
+                        <select id="srv-type" class="flat-input">
+                            <option value="uid">UID TopUp (Manual)</option>
+                            <option value="code">Voucher Code (Auto Delivery)</option>
+                            <option value="auto-topup">Auto TopUp (API Delivery)</option>
+                        </select>
+                    </div>
+                    <textarea id="srv-rules" placeholder="Instructions/Rules (One per line)" class="flat-input h-20 mb-4 resize-none"></textarea>
+                    <button onclick="addService()" class="flat-btn w-full"><i class="fas fa-plus"></i> Add Service</button>
+                </div>
+                <div class="flat-table-container">
+                    <table class="flat-table">
+                        <thead><tr><th class="w-20 text-center">Image</th><th>Service Name</th><th>Type</th><th class="w-40 text-center">Actions</th></tr></thead>
+                        <tbody id="srv-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Products View -->
+            <div id="view-products" class="view-section hidden">
+                <button onclick="switchView('services')" class="flat-btn-outline mb-4"><i class="fas fa-arrow-left mr-2"></i> Back to Services</button>
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Add Package for: <span id="prod-service-name" class="text-orange-500"></span></h3>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input type="text" id="prod-name" placeholder="Package Name" class="flat-input flex-1">
+                        <input type="number" id="prod-price" placeholder="Price (৳)" class="flat-input w-full md:w-48">
+                        <button onclick="addProduct()" class="flat-btn whitespace-nowrap"><i class="fas fa-plus"></i> Add Package</button>
+                    </div>
+                </div>
+                <div class="flat-table-container">
+                    <table class="flat-table">
+                        <thead><tr><th>Package Detail</th><th>Price</th><th>Stock Status</th><th class="w-56 text-center">Actions</th></tr></thead>
+                        <tbody id="prod-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stock View -->
+            <div id="view-stock" class="view-section hidden">
+                <button onclick="switchView('products', currentServiceId, currentServiceName, currentServiceType)" class="flat-btn-outline mb-4"><i class="fas fa-arrow-left mr-2"></i> Back to Packages</button>
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Import Codes: <span id="stock-prod-name" class="text-orange-500"></span></h3>
+                    <textarea id="stock-codes" placeholder="Paste codes here (1 code per line)" class="flat-input h-40 mb-4 font-mono text-sm leading-relaxed"></textarea>
+                    <button onclick="addStock()" class="flat-btn w-full"><i class="fas fa-upload"></i> Upload Stock</button>
+                </div>
+                <div class="flat-table-container">
+                    <table class="flat-table">
+                        <thead><tr><th>Secret Code</th><th>Upload Date</th><th class="w-24 text-center">Action</th></tr></thead>
+                        <tbody id="stock-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Orders View -->
+            <div id="view-orders" class="view-section hidden">
+                <div class="card bg-[#0D0E12] rounded-xl p-6 border border-[#1E2230] h-full flex flex-col shadow-lg shadow-blue-950/20">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">⚡ Order Console</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Track, process, and manage game topup client orders</p>
+                        </div>
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <button id="btn-order-bulk-delete" onclick="deleteSelectedOrders()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 border border-indigo-500/30">
+                                <i class="fas fa-archive"></i> Move to Trash (<span id="order-select-count">0</span>)
+                            </button>
+                            <div class="relative w-full md:w-72">
+                                <input type="text" id="order-search" placeholder="Search by Email, Game or PlayerID..." class="block w-full bg-[#131722] border border-[#202638] p-2.5 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors" onkeyup="filterOrders()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex border-b border-[#1E2230] mb-6 overflow-x-auto whitespace-nowrap gap-2 bg-[#131722]/50 p-1 rounded-lg border">
+                        <button id="tab-order-pending" onclick="switchOrderTab('pending')" class="py-2 px-4 text-xs font-semibold rounded-md bg-blue-600 text-white shadow shadow-blue-500/20 transition-all">⏳ Active Orders</button>
+                        <button id="tab-order-history" onclick="switchOrderTab('history')" class="py-2 px-4 text-xs font-semibold rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1E2230] transition-all">📜 Order Archives</button>
+                        <button id="tab-order-deleted" onclick="switchOrderTab('deleted')" class="py-2 px-4 text-xs font-semibold rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1E2230] transition-all">🗑️ Order Trash</button>
+                    </div>
+                    <div class="overflow-x-auto flex-1 border border-[#1E2230] rounded-xl bg-[#11141D]">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-[#161B26] border-b border-[#1E2230] text-slate-300 font-semibold text-xs uppercase tracking-wider">
+                                    <th id="th-order-select" class="p-4 w-10 text-center hidden"><input type="checkbox" id="order-select-all" onclick="toggleSelectAllOrders(this)" class="rounded bg-[#09090B] border-[#202638] text-blue-500 focus:ring-0 cursor-pointer"></th>
+                                    <th class="p-4">Customer</th>
+                                    <th class="p-4">Game & Package</th>
+                                    <th class="p-4">Credentials / Player ID</th>
+                                    <th class="p-4">Revenue</th>
+                                    <th class="p-4">Delivery Status</th>
+                                    <th id="table-order-action-header" class="p-4 text-center w-40">Operations</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-list" class="divide-y divide-[#1E2230] text-slate-300"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposits View -->
+            <div id="view-deposits" class="view-section hidden">
+                <div class="card bg-[#18181A] rounded-xl p-6 border border-[#27272A]">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Deposit Management</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Manage user add money requests, history and trash</p>
+                        </div>
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <button id="btn-bulk-delete" onclick="deleteSelectedDeposits()" class="hidden bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+                                <i class="fas fa-trash"></i> Move to Trash (<span id="select-count">0</span>)
+                            </button>
+                            <div class="relative w-full md:w-64">
+                                <input type="text" id="deposit-search" placeholder="Search by TrxID or Email..." class="flat-input block w-full bg-[#09090B] border border-[#27272A] p-2.5 rounded-lg text-sm text-white focus:border-[#F49E0B]" onkeyup="filterDeposits()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex border-b border-[#27272A] mb-6 overflow-x-auto whitespace-nowrap gap-2">
+                        <button id="tab-pending" onclick="switchDepositTab('pending')" class="py-2.5 px-5 text-sm font-semibold border-b-2 border-[#F49E0B] text-[#F49E0B] transition-all">⏳ Pending Requests</button>
+                        <button id="tab-history" onclick="switchDepositTab('history')" class="py-2.5 px-5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-all">📜 Deposit History</button>
+                        <button id="tab-deleted" onclick="switchDepositTab('deleted')" class="py-2.5 px-5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-all">🗑️ Deleted Requests</button>
+                    </div>
+                    <div class="flat-table-container">
+                        <table class="flat-table text-sm w-full">
+                            <thead>
+                                <tr>
+                                    <th id="th-select" class="w-10 text-center hidden"><input type="checkbox" id="deposit-select-all" onclick="toggleSelectAllDeposits(this)" class="rounded bg-[#09090B] border-[#27272A] text-[#F49E0B] focus:ring-0"></th>
+                                    <th>User Email</th>
+                                    <th>Method</th>
+                                    <th>TrxID</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th id="table-action-header" class="w-32 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deposit-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USERS VIEW (WITH PHONE HARDWARE DETAILS & REFERRAL INFO) -->
+            <div id="view-users" class="view-section hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-users text-orange-500"></i> User Database & Phone Details (<span id="user-total-count">0</span>)
+                    </h3>
+                    <div class="relative w-full md:w-96">
+                        <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                        <input type="text" id="user-search" placeholder="Search by name, email, referral or phone..." class="flat-input pl-11 bg-dark-panel" onkeyup="searchUsers()">
+                    </div>
+                </div>
+                <div id="user-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            </div>
+
+            <!-- USER HISTORY VIEW -->
+            <div id="view-user-history" class="view-section hidden">
+                <button onclick="switchView('users')" class="flat-btn-outline mb-6"><i class="fas fa-arrow-left mr-2"></i> Back to Users</button>
+                <div class="card h-full flex flex-col p-0 overflow-hidden">
+                    <div class="bg-dark-panel p-6 border-b border-dark-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">History: <span id="history-user-name" class="text-orange-500">User</span></h3>
+                            <p id="history-user-email" class="text-sm text-gray-400"></p>
+                        </div>
+                        <div class="flex bg-dark-bg p-1 rounded-lg border border-dark-border">
+                            <button id="tab-btn-orders" onclick="switchUserHistoryTab('orders')" class="px-4 py-2 text-sm font-bold rounded-md bg-orange-500 text-white transition">Orders List</button>
+                            <button id="tab-btn-deposits" onclick="switchUserHistoryTab('deposits')" class="px-4 py-2 text-sm font-bold rounded-md text-gray-400 hover:text-white transition">Add Money List</button>
+                        </div>
+                    </div>
+                    <div class="p-4 border-b border-dark-border bg-dark-panel/50">
+                        <input type="text" id="history-search" placeholder="Search in history..." class="flat-input w-full md:w-1/2" onkeyup="filterUserHistory()">
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-6">
+                        <div class="flat-table-container">
+                            <table class="flat-table text-sm">
+                                <thead id="history-table-head"></thead>
+                                <tbody id="history-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Push Notifications View -->
+            <div id="view-push-notif" class="view-section hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-white mb-5 border-b border-dark-border pb-3">Create Notification</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Target Audience</label>
+                                <select id="notif-target-type" class="flat-input" onchange="toggleNotifTargetBox()">
+                                    <option value="all">Send to All Users</option>
+                                    <option value="specific">Send to Specific User</option>
+                                </select>
+                            </div>
+                            <div id="notif-email-box" class="hidden p-4 bg-dark-bg border border-dark-border rounded-xl">
+                                <label class="block text-xs text-orange-500 mb-2 font-semibold uppercase">Select Target User</label>
+                                <input type="text" id="notif-user-search" onkeyup="filterNotifUsers()" placeholder="Search user by name or email..." class="flat-input mb-3 bg-dark-panel">
+                                <div id="notif-user-list" class="max-h-48 overflow-y-auto bg-dark-panel border border-dark-border rounded-lg rounded-b-none border-b-0"></div>
+                                <div class="p-2 border border-dark-border rounded-b-lg bg-dark-bg text-center">
+                                    <input type="hidden" id="notif-target-email">
+                                    <div id="selected-user-display" class="text-sm text-gray-400">No user selected</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Notification Title</label>
+                                <input type="text" id="notif-title" class="flat-input" placeholder="e.g. Special Discount!">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Message Body</label>
+                                <textarea id="notif-message" class="flat-input h-24 resize-none" placeholder="Type your message..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Icon URL (Optional)</label>
+                                <input type="text" id="notif-logo" class="flat-input" placeholder="Image URL">
+                            </div>
+                            <button onclick="sendCustomNotification()" class="flat-btn w-full mt-2"><i class="fas fa-paper-plane"></i> Send Notification</button>
+                        </div>
+                    </div>
+                    <div class="card flex flex-col max-h-[700px]">
+                        <h3 class="text-lg font-bold text-white mb-4 border-b border-dark-border pb-3">Recent History</h3>
+                        <div class="flex-1 overflow-y-auto space-y-3 pr-2" id="notif-history"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unpin View -->
+            <div id="view-unpin" class="view-section hidden">
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Generate Unpin Code</h3>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input type="text" id="unpin-code" placeholder="Enter Secure Code" class="flat-input flex-1 font-mono tracking-widest">
+                        <button onclick="addUnpinCode()" class="flat-btn whitespace-nowrap"><i class="fas fa-plus"></i> Save Code</button>
+                    </div>
+                </div>
+                <div class="flat-table-container">
+                    <table class="flat-table">
+                        <thead><tr><th>Active Code</th><th>Date</th><th class="w-24 text-center">Action</th></tr></thead>
+                        <tbody id="unpin-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tutorials View -->
+            <div id="view-tutorials" class="view-section hidden">
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Add Tutorial Video</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <input type="text" id="tut-title" placeholder="Video Title" class="flat-input">
+                        <input type="text" id="tut-link" placeholder="YouTube Video URL" class="flat-input">
+                        <input type="text" id="tut-thumb" placeholder="Thumbnail URL" class="flat-input">
+                    </div>
+                    <button onclick="addTutorial()" class="flat-btn w-full"><i class="fas fa-upload"></i> Publish Tutorial</button>
+                </div>
+                <div class="flat-table-container">
+                    <table class="flat-table">
+                        <thead><tr><th class="w-24 text-center">Thumb</th><th>Title</th><th>Link</th><th class="w-24 text-center">Action</th></tr></thead>
+                        <tbody id="tut-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Banners View -->
+            <div id="view-banners" class="view-section hidden">
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Add Promo Banner</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="ban-img" placeholder="Image URL (Required)" class="flat-input">
+                        <input type="text" id="ban-link" placeholder="Click Redirect Link (Optional)" class="flat-input">
+                    </div>
+                    <button onclick="addBanner()" class="flat-btn w-full"><i class="fas fa-plus"></i> Add to Slider</button>
+                </div>
+                <div class="flat-table-container">
+                    <table class="flat-table">
+                        <thead><tr><th class="w-32 text-center">Preview</th><th>Link Attached</th><th class="w-24 text-center">Action</th></tr></thead>
+                        <tbody id="ban-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Launch Popup View -->
+            <div id="view-popup" class="view-section hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-white mb-5 border-b border-dark-border pb-3">Launch Announcement Popup Config</h3>
+                        <div class="flex items-center gap-3 mb-6 p-4 bg-dark-bg rounded-lg border border-dark-border">
+                            <input type="checkbox" id="set-launch-popup-enabled" class="w-5 h-5 accent-orange-500 rounded cursor-pointer">
+                            <label for="set-launch-popup-enabled" class="text-sm font-bold text-white cursor-pointer select-none">Show Popup on App Launch</label>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Popup Title</label>
+                                <input type="text" id="set-launch-popup-title" class="flat-input" placeholder="যেমন: নতুন আপডেট এসেছে!">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Popup Image URL (Optional)</label>
+                                <input type="text" id="set-launch-popup-img" class="flat-input" placeholder="https://example.com/image.png">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Popup Video/Redirect URL (Optional)</label>
+                                <input type="text" id="set-launch-popup-video" class="flat-input" placeholder="https://youtube.com/...">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Popup Message / Details</label>
+                                <textarea id="set-launch-popup-msg" class="flat-input h-32 resize-none" placeholder="বিজ্ঞপ্তিটি এখানে লিখুন..."></textarea>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-4 mt-2 pt-2">
+                                <button onclick="previewPopup()" class="flat-btn-outline w-full sm:w-1/2 flex items-center justify-center"><i class="fas fa-eye"></i> Preview Popup</button>
+                                <button onclick="saveSettings('popup')" class="flat-btn w-full sm:w-1/2 flex items-center justify-center"><i class="fas fa-save"></i> Save Config</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card flex flex-col justify-center items-center text-center p-8 bg-dark-panel">
+                        <div class="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mb-6 border border-orange-500/30">
+                            <i class="fas fa-info-circle text-4xl text-orange-500"></i>
+                        </div>
+                        <h4 class="text-white font-bold text-xl mb-3 tracking-wide">কিভাবে কাজ করবে?</h4>
+                        <p class="text-sm text-gray-400 leading-relaxed max-w-sm mb-6">
+                            "Show Popup" বাটনটি চালু রাখলে ইউজাররা অ্যাপে ঢুকলেই একটি পপআপ মেসেজ দেখতে পাবে। ইমেজ এবং লিংঙ্ক সেট করা থাকলে ইমেজে ক্লিক করলেই ইউজার সেই লিংকে চলে যাবে (ভিডিও বা অফার)।
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- USER MANAGE MODAL -->
+    <div id="user-manage-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-[99999]">
+        <div class="bg-dark-panel w-full max-w-md rounded-2xl border border-dark-border shadow-2xl modal-enter relative overflow-hidden">
+            <div class="p-5 border-b border-dark-border flex justify-between items-center bg-dark-bg/50">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fas fa-user-cog text-orange-500"></i> Manage User</h3>
+                <button onclick="closeUserModal()" class="text-gray-400 hover:text-red-500 transition text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center gap-4 mb-6 p-4 bg-dark-bg rounded-xl border border-dark-border">
+                    <img id="modal-user-img" src="" class="w-14 h-14 rounded-full border-2 border-orange-500 object-cover">
+                    <div>
+                        <h4 id="modal-user-name" class="font-bold text-white text-lg leading-tight">Name</h4>
+                        <p id="modal-user-email" class="text-xs text-gray-400 mb-1">email</p>
+                        <div class="text-xs font-bold text-green-400 bg-green-500/10 inline-block px-2 py-0.5 rounded">
+                            Current Balance: ৳<span id="modal-user-bal">0</span>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="text-sm font-bold text-gray-300 mb-3 uppercase tracking-wider">Balance Editor</h4>
+                <div class="flex flex-col gap-3 mb-6">
+                    <input type="number" id="modal-bal-input" placeholder="Enter Amount (e.g. 100)" class="flat-input text-lg font-bold text-center">
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="modifyUserBalance('add')" class="bg-green-600/20 text-green-500 border border-green-600/30 hover:bg-green-600 hover:text-white py-2 rounded-lg font-bold transition flex flex-col items-center gap-1"><i class="fas fa-plus"></i> <span class="text-xs">Add (+)</span></button>
+                        <button onclick="modifyUserBalance('sub')" class="bg-red-600/20 text-red-500 border border-red-600/30 hover:bg-red-600 hover:text-white py-2 rounded-lg font-bold transition flex flex-col items-center gap-1"><i class="fas fa-minus"></i> <span class="text-xs">Deduct (-)</span></button>
+                        <button onclick="modifyUserBalance('set')" class="bg-blue-600/20 text-blue-500 border border-blue-600/30 hover:bg-blue-600 hover:text-white py-2 rounded-lg font-bold transition flex flex-col items-center gap-1"><i class="fas fa-equals"></i> <span class="text-xs">Set (=)</span></button>
+                    </div>
+                </div>
+                <h4 class="text-sm font-bold text-gray-300 mb-3 uppercase tracking-wider">Quick Actions</h4>
+                <div class="flex flex-col gap-3">
+                    <button id="modal-btn-history" class="w-full bg-dark-bg border border-dark-border hover:border-orange-500 text-white py-3 rounded-lg font-semibold transition flex justify-between items-center px-4 group">
+                        <span class="flex items-center gap-2"><i class="fas fa-history text-orange-500"></i> View Full History</span>
+                        <i class="fas fa-chevron-right text-gray-500 group-hover:text-orange-500"></i>
+                    </button>
+                    <button id="modal-btn-push" class="w-full bg-dark-bg border border-dark-border hover:border-purple-500 text-white py-3 rounded-lg font-semibold transition flex justify-between items-center px-4 group">
+                        <span class="flex items-center gap-2"><i class="fas fa-paper-plane text-purple-500"></i> Send Push Notification</span>
+                        <i class="fas fa-chevron-right text-gray-500 group-hover:text-purple-500"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3B7DZ_JeY-a33zdixKmZ6oQrU2iEVsEk",
+            authDomain: "samim-firebase.firebaseapp.com",
+            projectId: "samim-firebase",
+            storageBucket: "samim-firebase.firebasestorage.app",
+            messagingSenderId: "521003542655",
+            appId: "1:521003542655:web:bbabcf2f24a0eaeeef774a",
+            measurementId: "G-SPBMDSXJVX",
+            databaseURL: "https://samim-firebase-default-rtdb.firebaseio.com"
+        };
+        let db = null;
+        let rtdb = null;
+        let adminReferralBonusAmount = 10; // Default 10 Tk referral bonus
+        try {
+            if (typeof firebase !== 'undefined') {
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                rtdb = firebase.database();
+            }
+        } catch (e) { console.error("Firebase init failed: ", e); }
+
+        let currentServiceId = null, currentServiceName = null, currentServiceType = null;
+        let currentProductId = null, currentProductName = null;
+        let allUsers = [], notifUsersList = [];
+        let selectedUserId = null, selectedUserEmail = null, selectedUserName = null, selectedUserBal = 0;
+        let currentUserHistory = { orders: [], deposits: [] }, currentHistoryTab = 'orders';
+        let activeRingtone = false, isFirstLoadOrders = true, isFirstLoadDeposits = true;
+        let isBalanceProcessing = false;
+        const ringtoneAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2013/2013-120.wav");
+        ringtoneAudio.loop = true;
+
+        window.onload = function() {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 700); }
+            }, 2000);
+            try {
+                switchView('dashboard');
+                if (db) { loadDashboardData(); initRealtimeAlerts(); loadSettings(); }
+            } catch(e) {}
+        };
+
+        function showLoading() { document.getElementById('loading-spinner').style.display = 'flex'; }
+        function hideLoading() { document.getElementById('loading-spinner').style.display = 'none'; }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebar-backdrop').classList.toggle('hidden');
+        }
+        function dbError(err) { console.error("DB Error: ", err); hideLoading(); }
+
+        function switchView(viewId, param1 = null, param2 = null, param3 = null) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            const viewEl = document.getElementById('view-' + viewId);
+            if(viewEl) viewEl.classList.remove('hidden');
+            const navEl = document.getElementById('nav-' + viewId);
+            if(navEl) navEl.classList.add('active');
+            if (window.innerWidth < 1024) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-backdrop')?.classList.add('hidden');
+            }
+            if(!db) return;
+            if(viewId === 'dashboard') loadDashboardData();
+            if(viewId === 'settings' || viewId === 'popup') loadSettings();
+            if(viewId === 'categories') loadCategories();
+            if(viewId === 'services') loadServices();
+            if(viewId === 'orders') loadOrders();
+            if(viewId === 'deposits') loadDeposits();
+            if(viewId === 'users') loadUsers();
+            if(viewId === 'push-notif') loadNotificationsHistory();
+            if(viewId === 'unpin') loadUnpinCodes();
+            if(viewId === 'tutorials') loadTutorials();
+            if(viewId === 'banners') loadBanners();
+        }
+
+        function refreshData() {
+            showLoading();
+            setTimeout(() => { switchView('dashboard'); hideLoading(); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data Refreshed', showConfirmButton: false, timer: 1500}); }, 1000);
+        }
+
+        function initRealtimeAlerts() {
+            db.collection('orders').where('status', '==', 'pending').onSnapshot(snap => {}, dbError);
+            db.collection('deposits').where('status', '==', 'pending').onSnapshot(snap => {}, dbError);
+        }
+
+        function loadDashboardData() {
+            db.collection('users').get().then(snap => { document.getElementById('dash-users').innerText = snap.size; });
+            db.collection('orders').get().then(snap => {
+                document.getElementById('dash-orders').innerText = snap.size;
+                let rev = 0;
+                snap.forEach(doc => { if(doc.data().status === 'success') { rev += parseInt(doc.data().price || 0); } });
+                document.getElementById('dash-revenue').innerText = '৳' + rev;
+            });
+            db.collection('deposits').where('status', '==', 'pending').get().then(snap => { document.getElementById('dash-deposits').innerText = snap.size; });
+        }
+
+        function loadSettings() {
+            db.collection('settings').doc('general').get().then(doc => {
+                if(doc.exists) {
+                    const d = doc.data();
+                    document.getElementById('set-sitename').value = d.siteName || '';
+                    document.getElementById('set-logo').value = d.logoUrl || '';
+                    document.getElementById('set-notice').value = d.notice || '';
+                    document.getElementById('set-applink').value = d.appLink || '';
+                    document.getElementById('set-referral-bonus').value = d.referralBonusAmount !== undefined ? d.referralBonusAmount : 10;
+                    adminReferralBonusAmount = parseFloat(document.getElementById('set-referral-bonus').value) || 10;
+                    document.getElementById('set-whatsapp').value = d.whatsapp || '';
+                    document.getElementById('set-telegram').value = d.telegram || '';
+                    document.getElementById('set-facebook').value = d.facebook || '';
+                    document.getElementById('set-youtube').value = d.youtube || '';
+                    document.getElementById('set-promo-img').value = d.promoImageUrl || '';
+                    document.getElementById('set-promo-link').value = d.promoImageLink || '';
+                    if(document.getElementById('set-autopay')) document.getElementById('set-autopay').checked = !!d.autoPayEnabled;
+                    document.getElementById('set-api-key').value = d.autoTopUpApiKey || '';
+                    document.getElementById('set-api-url').value = d.autoTopUpApiUrl || '';
+                    document.getElementById('set-api-callback').value = d.autoTopUpCallbackUrl || '';
+                    if(document.getElementById('set-launch-popup-enabled')) document.getElementById('set-launch-popup-enabled').checked = !!d.launchPopupEnabled;
+                    document.getElementById('set-launch-popup-title').value = d.launchPopupTitle || '';
+                    document.getElementById('set-launch-popup-img').value = d.launchPopupImg || '';
+                    document.getElementById('set-launch-popup-video').value = d.launchPopupVideo || '';
+                    document.getElementById('set-launch-popup-msg').value = d.launchPopupMsg || '';
+                }
+            });
+            db.collection('settings').doc('videos').get().then(doc => {
+                if(doc.exists) { document.getElementById('set-tutorial-vid').value = doc.data().howToAddMoney || ''; }
+            });
+            db.collection('admin').doc('payment').get().then(doc => {
+                if(doc.exists) {
+                    const d = doc.data();
+                    document.getElementById('set-bkash').value = d.bKash || '';
+                    document.getElementById('set-nagad').value = d.Nagad || '';
+                }
+            });
+        }
+
+        function saveSettings(type) {
+            showLoading();
+            let p1;
+            if (type === 'general') {
+                const refBonus = parseFloat(document.getElementById('set-referral-bonus').value) || 10;
+                adminReferralBonusAmount = refBonus;
+                p1 = db.collection('settings').doc('general').set({
+                    siteName: document.getElementById('set-sitename').value,
+                    logoUrl: document.getElementById('set-logo').value,
+                    notice: document.getElementById('set-notice').value,
+                    appLink: document.getElementById('set-applink').value,
+                    referralBonusAmount: refBonus
+                }, {merge: true});
+            } else if (type === 'social') {
+                p1 = db.collection('settings').doc('general').set({
+                    whatsapp: document.getElementById('set-whatsapp').value,
+                    telegram: document.getElementById('set-telegram').value,
+                    facebook: document.getElementById('set-facebook').value,
+                    youtube: document.getElementById('set-youtube').value
+                }, {merge: true});
+            } else if (type === 'payment') {
+                p1 = db.collection('admin').doc('payment').set({
+                    bKash: document.getElementById('set-bkash').value,
+                    Nagad: document.getElementById('set-nagad').value
+                }, {merge: true});
+            } else if (type === 'advanced') {
+                p1 = db.collection('settings').doc('general').set({
+                    promoImageUrl: document.getElementById('set-promo-img').value,
+                    promoImageLink: document.getElementById('set-promo-link').value,
+                    autoPayEnabled: document.getElementById('set-autopay').checked,
+                    autoTopUpApiKey: document.getElementById('set-api-key').value,
+                    autoTopUpApiUrl: document.getElementById('set-api-url').value,
+                    autoTopUpCallbackUrl: document.getElementById('set-api-callback').value
+                }, {merge: true});
+                db.collection('settings').doc('videos').set({ howToAddMoney: document.getElementById('set-tutorial-vid').value }, {merge: true});
+            } else if (type === 'popup') {
+                p1 = db.collection('settings').doc('general').set({
+                    launchPopupEnabled: document.getElementById('set-launch-popup-enabled').checked,
+                    launchPopupTitle: document.getElementById('set-launch-popup-title').value,
+                    launchPopupImg: document.getElementById('set-launch-popup-img').value,
+                    launchPopupVideo: document.getElementById('set-launch-popup-video').value,
+                    launchPopupMsg: document.getElementById('set-launch-popup-msg').value
+                }, {merge: true});
+            }
+            if(p1) {
+                p1.then(() => { hideLoading(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Saved successfully!', timer:1500, showConfirmButton:false}); });
+            }
+        }
+
+        // USERS & DEVICE DETAILS DISPLAY WITH REFERRAL
+        function loadUsers() {
+            db.collection('users').onSnapshot(snap => {
+                allUsers = [];
+                snap.forEach(doc => allUsers.push({id: doc.id, ...doc.data()}));
+                document.getElementById('user-total-count').innerText = allUsers.length;
+                renderUsersGrid(allUsers);
+            });
+        }
+
+        function searchUsers() {
+            const term = document.getElementById('user-search').value.toLowerCase();
+            const filtered = allUsers.filter(u =>
+                (u.email || '').toLowerCase().includes(term) ||
+                (u.name || '').toLowerCase().includes(term) ||
+                (u.deviceName || '').toLowerCase().includes(term) ||
+                (u.referralCode || '').toLowerCase().includes(term)
+            );
+            renderUsersGrid(filtered);
+        }
+
+        function renderUsersGrid(users) {
+            const grid = document.getElementById('user-grid');
+            grid.innerHTML = '';
+            if(users.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 bg-dark-panel/30 rounded-3xl border border-dashed border-dark-border"><p class="text-gray-500 font-medium">No users found.</p></div>`;
+                return;
+            }
+            users.forEach(u => {
+                const avatar = u.photoURL && u.photoURL !== 'logo.png' ? u.photoURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}&background=F49E0B&color=fff`;
+                const isOnline = u.isOnline === true;
+                const deviceName = u.deviceName || u.deviceModel || 'Unknown Device';
+                const resolution = u.screenResolution || 'N/A';
+                const refCode = u.referralCode || ('ESP-' + u.id.slice(0, 6).toUpperCase());
+                const refCount = u.totalReferCount || 0;
+                const refEarn = u.totalReferEarnings || 0;
+
+                grid.innerHTML += `
+                <div class="user-card bg-dark-panel p-6 rounded-[2rem] border border-dark-border flex flex-col gap-4 relative overflow-hidden">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <img src="${avatar}" class="w-16 h-16 rounded-2xl border-2 border-dark-border object-cover">
+                            <div>
+                                <h4 class="text-white font-bold text-lg tracking-tight truncate">${u.name || 'Anonymous User'}</h4>
+                                <p class="text-xs text-gray-400 truncate font-medium">${u.email || 'No email'}</p>
+                                <span class="text-[10px] text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded font-mono">Ref: ${refCode}</span>
+                            </div>
+                        </div>
+                        <div>
+                            ${isOnline ? '<span class="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded">ONLINE</span>' : '<span class="text-[10px] font-bold text-gray-400 bg-gray-500/10 px-2 py-1 rounded">OFFLINE</span>'}
+                        </div>
+                    </div>
+
+                    <!-- PHONE HARDWARE DETAILS -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-dark-bg/60 p-3 rounded-2xl border border-dark-border/60">
+                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-0.5">PHONE MODEL</span>
+                            <span class="text-xs text-gray-200 font-semibold truncate block"><i class="fas fa-mobile-alt mr-1 text-orange-500"></i> ${deviceName}</span>
+                            <span class="text-[10px] text-gray-400 block mt-0.5">Screen: ${resolution}</span>
+                        </div>
+                        <div class="bg-dark-bg/60 p-3 rounded-2xl border border-dark-border/60">
+                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-0.5">REFERRAL STATS</span>
+                            <span class="text-xs text-green-400 font-bold block">${refCount} Friends</span>
+                            <span class="text-[10px] text-orange-400 font-semibold block">Earned: ৳${refEarn}</span>
+                        </div>
+                    </div>
+
+                    <!-- BALANCE & ACTIONS -->
+                    <div class="pt-3 border-t border-dark-border/50 flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase">AVAILABLE BALANCE</p>
+                            <p class="text-xl font-black text-white"><span class="text-orange-500">৳</span>${(u.balance || 0).toLocaleString()}</p>
+                        </div>
+                        <button onclick="openUserModal('${u.id}')" class="px-4 py-2 bg-orange-500/20 hover:bg-orange-500 text-orange-500 hover:text-white rounded-xl text-xs font-bold transition">
+                            <i class="fas fa-sliders-h mr-1"></i> Manage
+                        </button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // DEPOSIT APPROVE WITH AUTOMATIC REFERRAL BONUS SYSTEM
+        async function approveDeposit(docId, userId, amount, email, trxId) {
+            showLoading();
+            try {
+                const userRef = db.collection('users').doc(userId);
+                let referralAwarded = false;
+                let referrerEmail = "";
+
+                await db.runTransaction(async (transaction) => {
+                    const userDoc = await transaction.get(userRef);
+                    if (!userDoc.exists) throw "ইউজার খুঁজে পাওয়া যায়নি!";
+                    
+                    const uData = userDoc.data();
+                    let currentBalance = parseFloat(uData.balance || 0);
+                    let newBalance = currentBalance + parseFloat(amount);
+                    
+                    // Check Referral Bonus condition
+                    const refCode = uData.referredByCode;
+                    const isPaid = uData.referralBonusPaid === true;
+                    if (refCode && !isPaid && parseFloat(amount) > 0) {
+                        referralAwarded = true;
+                    }
+
+                    transaction.update(userRef, { 
+                        balance: newBalance,
+                        referralBonusPaid: true // Mark referral bonus as triggered for this user
+                    });
+                });
+
+                // Award Referral Bonus to Referrer if eligible
+                const uDocAfter = await userRef.get();
+                const referredCode = uDocAfter.data()?.referredByCode;
+                if (referredCode && referralAwarded) {
+                    let cleanRefCode = String(referredCode).trim().toUpperCase();
+                    if (!cleanRefCode.startsWith('ESP-')) {
+                        cleanRefCode = 'ESP-' + cleanRefCode;
+                    }
+                    const shortCode = cleanRefCode.replace('ESP-', '');
+
+                    let refUserDoc = null;
+                    const referrerSnap = await db.collection('users').where('referralCode', '==', cleanRefCode).get();
+                    if (!referrerSnap.empty) {
+                        refUserDoc = referrerSnap.docs[0];
+                    } else {
+                        const allUsers = await db.collection('users').get();
+                        allUsers.forEach(d => {
+                            const genCode = (d.data().referralCode || ("ESP-" + d.id.slice(0, 6).toUpperCase())).toUpperCase();
+                            if (genCode === cleanRefCode || d.id.toUpperCase().startsWith(shortCode)) {
+                                refUserDoc = d;
+                            }
+                        });
+                    }
+
+                    if (refUserDoc) {
+                        referrerEmail = refUserDoc.data().email || "";
+                        const refBonus = parseFloat(adminReferralBonusAmount) || 10;
+                        await db.collection('users').doc(refUserDoc.id).update({
+                            referralCode: cleanRefCode,
+                            balance: firebase.firestore.FieldValue.increment(refBonus),
+                            totalReferEarnings: firebase.firestore.FieldValue.increment(refBonus)
+                        });
+                        // Send Notification to Referrer
+                        sendInstantStatusNotification(
+                            "🎉 রেফার বোনাস প্রাপ্তি!",
+                            `আপনার বন্ধু ডিপোজিট সম্পন্ন করায় আপনি ${refBonus} ৳ রেফার বোনাস পেয়েছেন!`,
+                            referrerEmail
+                        );
+                    }
+                }
+
+                await db.collection('deposits').doc(docId).update({
+                    status: 'approved',
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                sendInstantStatusNotification(
+                    "৳" + amount + " অ্যাড মানি সফল ✅",
+                    `আপনার TrxID: ${trxId} এর মাধ্যমে পাঠানো টাকা আপনার ওয়ালেটে যোগ করা হয়েছে।`,
+                    email
+                );
+
+                hideLoading();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Approved!',
+                    text: `৳${amount} টাকা সফলভাবে ইউজারের অ্যাকাউন্টে যোগ হয়েছে।${referralAwarded ? ' (রেফার বোনাস প্রেরিত)' : ''}`,
+                    confirmButtonColor: '#F49E0B'
+                });
+            } catch (error) {
+                hideLoading();
+                console.error("Approve Error: ", error);
+                Swal.fire('Error', 'এপ্রুভ করতে সমস্যা হয়েছে: ' + error, 'error');
+            }
+        }
+
+        function rejectDeposit(docId, email, trxId, amount) {
+            Swal.fire({
+                title: 'রিজেক্ট করার কারণ লিখুন',
+                input: 'text',
+                showCancelButton: true,
+                confirmButtonText: 'Confirm Reject',
+                confirmButtonColor: '#d33'
+            }).then(r => {
+                if (r.value !== undefined) {
+                    db.collection('deposits').doc(docId).update({ status: 'rejected', rejectReason: r.value || 'Rejected' });
+                    sendInstantStatusNotification("অ্যাড মানি বাতিল ❌", `আপনার ৳${amount} রিকোয়েস্ট বাতিল হয়েছে।`, email);
+                }
+            });
+        }
+
+        function loadDeposits() {
+            db.collection('deposits').orderBy('date', 'desc').onSnapshot(snap => {
+                const list = document.getElementById('deposit-list');
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    if(d.status === 'pending') {
+                        list.innerHTML += `<tr>
+                            <td>${d.userEmail}</td><td><span class="text-orange-500 font-mono">${d.method}</span></td><td>${d.trxId}</td>
+                            <td class="text-green-400 font-bold">৳${d.amount}</td>
+                            <td><span class="bg-orange-500/10 text-orange-500 px-2 py-1 rounded">Pending</span></td>
+                            <td>
+                                <button onclick="approveDeposit('${doc.id}', '${d.userId}', ${d.amount}, '${d.userEmail}', '${d.trxId}')" class="bg-green-500/20 text-green-500 px-3 py-1 rounded mr-2"><i class="fas fa-check"></i></button>
+                                <button onclick="rejectDeposit('${doc.id}', '${d.userEmail}', '${d.trxId}', ${d.amount})" class="bg-red-500/20 text-red-500 px-3 py-1 rounded"><i class="fas fa-times"></i></button>
+                            </td>
+                        </tr>`;
+                    }
+                });
+            });
+        }
+
+        function sendInstantStatusNotification(title, message, targetEmail, targetSection = "home") {
+            if (!rtdb) return;
+            const docId = db.collection('push_notifications').doc().id;
+            const payload = {
+                title: title, message: message, logoUrl: "https://i.ibb.co/Gz46D8S/1000015293.jpg",
+                target: targetEmail === "all" ? "all" : "user", targetEmail: targetEmail.toLowerCase(),
+                targetSection: targetSection, clientTimestamp: Date.now()
+            };
+            rtdb.ref('live_notifications/' + docId).set(payload);
+            db.collection('push_notifications').doc(docId).set({ ...payload, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+
+        function openUserModal(uid) {
+            const user = allUsers.find(u => u.id === uid);
+            if (!user) return;
+            selectedUserId = user.id; selectedUserEmail = user.email; selectedUserName = user.name || 'User'; selectedUserBal = parseFloat(user.balance || 0);
+            document.getElementById('modal-user-name').innerText = selectedUserName;
+            document.getElementById('modal-user-email').innerText = selectedUserEmail;
+            document.getElementById('modal-user-bal').innerText = selectedUserBal;
+            document.getElementById('modal-bal-input').value = '';
+            document.getElementById('user-manage-modal').classList.remove('hidden');
+            document.getElementById('user-manage-modal').style.display = 'flex';
+        }
+        function closeUserModal() {
+            document.getElementById('user-manage-modal').classList.add('hidden');
+            document.getElementById('user-manage-modal').style.display = 'none';
+        }
+        function modifyUserBalance(type) {
+            const amt = parseFloat(document.getElementById('modal-bal-input').value);
+            if(isNaN(amt) || amt <= 0) return;
+            const uRef = db.collection('users').doc(selectedUserId);
+            db.runTransaction(async t => {
+                const doc = await t.get(uRef);
+                let bal = parseFloat(doc.data().balance || 0);
+                let newBal = type === 'add' ? bal + amt : (type === 'sub' ? Math.max(0, bal - amt) : amt);
+                t.update(uRef, { balance: newBal });
+            }).then(() => {
+                closeUserModal();
+                Swal.fire('Success', 'Balance updated successfully!', 'success');
+            });
+        }
+    </script>
+</body>
+</html>

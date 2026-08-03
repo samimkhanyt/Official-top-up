@@ -93,15 +93,17 @@ dependencies {
   // implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
-  // implementation(libs.coil.compose)
+  implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
   implementation(libs.firebase.ai)
   implementation(libs.firebase.messaging)
+  implementation(libs.firebase.database)
   // Uncomment to use Firestore:
   // implementation(libs.firebase.firestore)
 
-  // Uncomment ALL FOUR of the following dependencies together to use Firebase Auth and Google
-  // Sign-In via Credential Manager:
+  // Firebase Auth with Google Sign-In requires all of the following to be uncommented together.
+  // If you are using Firebase Auth with other providers (e.g. Email/Password), you may only need
+  // firebase-auth.
   // implementation(libs.firebase.auth)
   // implementation(libs.androidx.credentials)
   // implementation(libs.androidx.credentials.play.services)

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Esp TopUp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Bree+Serif&family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #f8fafc; 
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        #global-page-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        .spinner-loader {
+            width: 45px; height: 45px;
+            border: 5px solid #f3f3f3; border-top: 5px solid #03a9f4;
+            border-radius: 50%; animation: spin-loader 1s linear infinite;
+        }
+        @keyframes spin-loader { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #custom-toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            z-index: 10000; opacity: 0; transition: opacity 0.5s ease-in-out; pointer-events: none;
+            width: max-content;
+            max-width: 92vw;
+        }
+        #custom-toast.show { opacity: 1; }
+        .toast-box {
+            background-color: rgba(0, 0, 0, 0.85); color: white; padding: 10px 22px;
+            border-radius: 50px; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .toast-logo-small { width: 22px; height: 22px; object-fit: contain; }
+
+        .order-card-hunt {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            font-family: 'Poppins', sans-serif;
+        }
+        .order-card-hunt p { margin-bottom: 6px; font-size: 15px; color: #1e293b; font-weight: 500; }
+        .order-card-hunt b { color: #0f172a; font-weight: 700; width: 100px; display: inline-block; }
+        .status-complete-text { color: #16a34a !important; font-weight: 800; }
+        .status-pending-text { color: #d97706 !important; font-weight: 800; }
+
+        #home-sec, #account-sec, #tutorial-sec { font-family: 'Bree Serif', serif; }
+        
+        .nav-gradient { background: white; color: #1e293b; }
+        .active-tab { color: #03a9f4 !important; }
+        .hidden { display: none !important; }
+        
+        .font-en { font-family: 'Poppins', sans-serif; }
+        .font-bn { font-family: 'Noto Serif Bengali', serif; }
+        .lang-auto { font-family: 'Poppins', sans-serif; }
+        #home-sec .lang-auto { font-family: 'Bree Serif', serif; }
+        .lang-auto:lang(bn), .lang-auto:lang(bn-BD) { font-family: 'Noto Serif Bengali', serif; }
+        
+        .notice-scroll { animation: scroll-left 15s linear infinite; display: inline-block; white-space: nowrap; }
+        @keyframes scroll-left { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
+        .method-card { transition: all 0.2s; border: 2px solid transparent; }
+        .method-card:active { transform: scale(0.95); }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-fade-in { animation: fadeInUp 0.4s ease-out forwards; }
+
+        .product-card {
+            background: white;
+            border: 2px solid #0f172a;
+            border-radius: 16px;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .product-card:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+            transform: translateY(-2px);
+        }
+        .product-card:active { transform: scale(0.97); }
+        .product-card.selected {
+            border: 2px solid #0284c7;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+        }
+        .product-bullet {
+            height: 16px; width: 16px; background-color: #cbd5e1; border-radius: 50%; margin-right: 10px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        .product-card.selected .product-bullet {
+            background-color: #0284c7;
+            box-shadow: 0 0 0 2px #0284c7;
+        }
+        
+        #fab-container.is-open #fab-toggler { background-color: #dc2626; }
+        #fab-container.is-open #fab-icon-open { transform: rotate(-180deg) scale(0); opacity: 0; }
+        #fab-container.is-open #fab-icon-close { transform: scale(1) rotate(0); opacity: 1; }
+        #fab-container.is-open #fab-options { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .aspect-video { aspect-ratio: 16 / 9; }
+
+        .step-transition { animation: slideInRight 0.3s ease-out forwards; }
+        @keyframes slideInRight { from { transform: translateX(10%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        .theme-bkash { background-color: #e2136e !important; border-color: #e2136e !important; }
+        .theme-nagad { background-color: #f7941d !important; border-color: #f7941d !important; }
+        .theme-rocket { background-color: #8c3494 !important; border-color: #8c3494 !important; }
+        
+        .text-theme-bkash { color: #e2136e !important; }
+        .text-theme-nagad { color: #f7941d !important; }
+        .text-theme-rocket { color: #8c3494 !important; }
+
+        .pay-option-card {
+            border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: white; cursor: pointer; position: relative; transition: all 0.2s;
+        }
+        .pay-option-card.selected { border: 2px solid #ef4444; }
+        .pay-option-card.selected::before {
+            content: '\f00c'; font-family: 'Font Awesome 5 Free'; font-weight: 900; position: absolute; top: 0; left: 0; background: #ef4444; color: white; font-size: 10px; padding: 2px 6px; border-bottom-right-radius: 6px; z-index: 10;
+        }
+
+        .custom-slider-container { width: 100%; overflow: hidden; border-radius: 0px !important; position: relative; user-select: none; touch-action: pan-y; margin-bottom: 5px; box-shadow: none; }
+        .custom-slider-wrapper { display: flex; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); width: 100%; }
+        .custom-slide { min-width: 100%; aspect-ratio: 16 / 6; cursor: pointer; }
+        .custom-slide img { width: 100%; height: 100%; object-fit: fill; }
+        
+        .progress-bar-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 5px auto 15px auto; width: auto; background: transparent; overflow: visible; }
+        .progress-bar-fill { height: 5px; width: 6px; background: #D9D9D9; border-radius: 10px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
+        .progress-bar-fill.active { width: 22px; background: #FF9900; }
+
+        nav {
+            position: fixed; bottom: 0; left: 0; right: 0; width: 100%; z-index: 50; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(8px); border-top: 1px solid rgba(0,0,0,0.05); transform: translateZ(0);
+        }
+
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%; overscroll-behavior-y: none; overscroll-behavior-x: none; overflow: hidden; background-color: #f8fafc;
+        }
+
+        #app-content {
+            height: 100vh; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; position: relative; width: 100%; display: flex; flex-direction: column;
+        }
+
+        #main-custom-slider {
+            width: 100vw; margin: 18px 0 10px 0 !important; padding: 0; position: relative; left: 50%; transform: translateX(-50%);
+        }
+
+        nav, header {
+            position: fixed; transform: translateZ(0); -webkit-transform: translateZ(0); backface-visibility: hidden; z-index: 100;
+        }
+
+        .premium-notice {
+            background: linear-gradient(90deg, #03a9f4 0%, #007bb5 100%); padding: 10px 15px; color: white; display: flex; align-items: center; min-height: 45px; position: relative; overflow: hidden; border-bottom: 2px solid rgba(255,255,255,0.2); z-index: 40;
+        }
+
+        #notice-text {
+            font-size: 11.5px; font-weight: 700; font-family: 'Noto Serif Bengali', serif; white-space: nowrap; display: inline-block; will-change: transform; animation: scroll-with-pause 12s linear infinite;
+        }
+
+        @keyframes scroll-with-pause {
+            0% { transform: translateX(100%); }
+            80% { transform: translateX(-100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .animated-gradient-title {
+            background: linear-gradient(90deg, #0284c7, #6366f1, #ec4899, #0284c7); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-text-shift 4s ease infinite;
+        }
+
+        #global-page-loader {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        #global-page-loader.fade-out { opacity: 0; visibility: hidden; }
+        
+        .net-box.offline { background-color: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; }
+        .net-box.online { background-color: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+        .net-box.hidden { display: none !important; }
+    </style>
+</head>
+<body class="select-none bg-slate-50 m-0 p-0">
+<div id="global-page-loader" class="relative">
+    <div class="w-32 h-32 bg-white border-2 border-gray-100 rounded-2xl shadow-lg flex items-center justify-center p-2 overflow-hidden aspect-square">
+        <img id="loader-logo-img" 
+             src="https://i.ibb.co.com/ksSXtjKG/1000020023.jpg" 
+             alt="Logo" 
+             loading="eager" 
+             fetchpriority="high" 
+             onerror="this.onerror=null;this.src='https://i.ibb.co.com/ksSXtjKG/1000020023.jpg'"
+             class="w-full h-full object-contain rounded-xl">
+    </div>
+
+    <div class="absolute bottom-10 flex flex-col items-center w-full px-6">
+        <div class="spinner-loader mb-2"></div>
+        <p class="text-xs font-bold text-sky-600 tracking-wider">Esp TopUp</p>
+
+        <div id="net-status-box" class="net-box hidden mt-3 px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-all duration-300 flex items-center gap-2">
+            <span id="net-status-icon"></span>
+            <span id="net-status-text"></span>
+        </div>
+    </div>
+</div>
+
+<div id="app-content" class="relative w-full min-h-screen bg-slate-50 shadow-none flex flex-col">
+    <header class="bg-white/90 backdrop-blur-md p-3 sticky top-0 z-40 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="showSec('home')">
+            <img id="header-logo-img" src="https://i.ibb.co.com/ksSXtjKG/1000020023.jpg" class="h-12 object-contain" alt="Header Logo">
+        </div>
+
+        <div id="header-user-info" class="hidden flex items-center gap-2 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-full border border-sky-200 transition cursor-pointer shadow-sm" onclick="showSec('account')">
+            <div class="relative w-8 h-8 rounded-full p-0.5 bg-gradient-to-tr from-sky-400 to-blue-600">
+                <img id="header-user-photo" src="https://i.ibb.co.com/ksSXtjKG/1000020023.jpg" onerror="this.onerror=null;this.src='https://i.ibb.co.com/ksSXtjKG/1000020023.jpg'" class="w-full h-full object-cover rounded-full bg-white">
+            </div>
+            <div class="flex flex-col text-left">
+                <span id="header-user-name" class="text-xs font-bold text-gray-800 leading-none">User</span>
+                <span class="text-[11px] font-extrabold text-sky-600 leading-none mt-0.5">৳ <span id="header-balance">0</span></span>
+            </div>
+        </div>
+
+        <div id="header-login-container">
+            <button onclick="showSec('auth')" class="bg-sky-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md hover:bg-sky-700 transition">
+                <i class="fas fa-sign-in-alt mr-1"></i> Login
+            </button>
+        </div>
+    </header>
+
+    <div id="notice-section" style="position: relative; z-index: 30; width: 100%;">
+        <div class="premium-notice" style="display: flex; align-items: center; justify-between: flex-start; padding: 12px 16px; background-color: #0284c7; color: #ffffff; width: 100%;">
+            <i class="fas fa-bullhorn text-yellow-300" style="font-size: 26px; margin-right: 12px; flex-shrink: 0;"></i>
+            
+            <div id="notice-text" style="font-size: 14px !important; font-weight: 800 !important; color: #ffffff !important; line-height: 1.3; flex-grow: 1; word-break: break-word;">
+            </div>
+
+            <button onclick="this.parentElement.parentElement.style.display='none'" class="notice-close" style="background: none; border: none; color: #ffffff; font-size: 22px; cursor: pointer; margin-left: 12px; flex-shrink: 0;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <main class="flex-1 flex flex-col p-0 relative">
+        <section id="auth-sec" class="hidden animate-fade-in flex-1 w-full flex items-center justify-center relative bg-gradient-to-b from-white via-sky-50/50 to-slate-100 px-4 py-8 overflow-hidden">
+            <div class="relative z-10 w-full max-w-xl mx-auto text-center flex flex-col justify-between items-center min-h-[70vh]">
+                <div class="flex-1 flex flex-col items-center justify-center w-full my-auto">
+                    <div class="mb-8">
+                        <img src="https://i.ibb.co.com/ksSXtjKG/1000020023.jpg" alt="Esp TopUp Logo" class="h-32 sm:h-44 object-contain filter drop-shadow-lg">
+                    </div>
+
+                    <h2 class="text-3xl sm:text-5xl font-black text-gray-800 mb-4 tracking-tight">
+                        Esp TopUp <span class="text-sky-500"> Login - sign up</span>
+                    </h2>
+                    
+                    <p class="text-gray-500 text-base sm:text-lg max-w-md mb-10 leading-relaxed font-normal">
+                        Sign in or create an account securely using your Google account to get started.
+                    </p>
+
+                    <button onclick="handleGoogleAuth()" class="w-full max-w-sm bg-white border border-gray-200 text-gray-700 font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl hover:bg-gray-50 flex items-center justify-center gap-3 text-base sm:text-lg">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-7 h-7" alt="Google Logo">
+                        <span>Continue with Google</span>
+                    </button>
+                </div>
+            </div>
+        </section> 
+
+        <section id="home-sec" class="animate-fade-in pb-12">
+            <div id="main-custom-slider" class="px-1 mt-2">
+                <div class="custom-slider-container" id="customSlider">
+                    <div class="custom-slider-wrapper" id="custom-slider-wrapper">
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="sliderProgressBar"></div>
+                </div>
+            </div>
+
+            <div id="services-list" class="space-y-6 mb-8 mt-2">
+                <div class="col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin text-sky-500"></i> Loading Games...</div>
+            </div>
+
+            <div class="mt-8 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div class="text-center mb-5">
+                    <img id="about-logo-img" src="https://i.ibb.co.com/ksSXtjKG/1000020023.jpg" class="h-10 mx-auto object-contain mb-2">
+                    <p class="text-sm text-gray-500 mt-1">Free Fire Diamond TopUp<br>Largest TopUp Site In Bangladesh</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <a id="about-facebook" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200 no-underline">
+                        <i class="fab fa-facebook-f text-lg text-[#1877F2]"></i> <span class="font-semibold text-sm text-gray-700">Facebook</span>
+                    </a>
+                    <a id="about-telegram" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200 no-underline">
+                        <i class="fab fa-telegram-plane text-lg text-[#0088cc]"></i> <span class="font-semibold text-sm text-gray-700">Telegram</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="text-center border-t border-gray-300 pt-8 mt-16 mb-20 mx-4">
+                <p class="text-xs text-gray-500 mb-4 leading-relaxed">
+                    © <span id="current-year">2026</span> Esp TopUp | All Rights Reserved
+                </p>
+            </div>
+        </section>
+
+        <section id="tutorial-sec" class="hidden animate-fade-in pb-24 px-4 bg-white min-h-screen">
+            <div class="max-w-xl mx-auto pt-4 bg-white">
+                <h2 class="font-extrabold text-2xl sm:text-3xl tracking-tight animated-gradient-title">Video Tutorials</h2>
+                <div id="tutorial-list-container" class="space-y-6 bg-white mt-4">
+                </div>
+            </div>
+        </section>
+
+        <section id="history-sec" class="hidden bg-white min-h-screen">
+            <div class="bg-white border-b border-gray-100 px-4 py-4 flex items-center gap-2 sticky top-0 z-10 shadow-sm">
+                <i class="fas fa-list-ul text-gray-700"></i>
+                <h2 class="text-lg font-bold text-gray-800">My Orders</h2>
+            </div>
+            <div id="history-list" class="bg-white p-4">
+            </div>
+        </section>
+
+        <section id="topup-sec" class="hidden animate-fade-in pb-10 bg-slate-50">
+            <div class="bg-white p-3 rounded-xl shadow-sm flex items-center gap-4 mb-4 border border-gray-100 mx-2 mt-2">
+                <button onclick="showSec('home')" class="text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 absolute top-4 right-4">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+                <img id="topup-game-img" src="" class="w-16 h-16 rounded-xl object-cover shadow-sm">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-base" id="topup-game-title">Game Name</h3>
+                    <p class="text-xs text-gray-700 font-medium" id="topup-sub-title">Game / Topup</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100 mx-2">
+                <div id="products-grid" class="grid grid-cols-2 gap-2"></div>
+            </div>
+
+            <div id="player-id-section" class="bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100 mx-2">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Player Id</label>
+                <input type="text" id="game-player-id" placeholder="Player Id" class="w-full bg-white border border-gray-300 p-2 rounded text-sm">
+            </div>
+
+            <div class="bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100 mx-2">
+                <button onclick="processOrder()" class="w-full bg-[#4a148c] text-white py-3 rounded-lg font-bold shadow-lg text-sm">
+                     Buy Now
+                </button>
+            </div>
+        </section>
+
+        <section id="addmoney-sec" class="hidden animate-fade-in pb-20 bg-[#f8fafc] min-h-screen">
+            <div id="am-step-1" class="step-transition">
+                <div class="bg-white p-6 shadow-sm border-b border-gray-100 mb-6">
+                    <h2 class="font-bold text-lg text-gray-800 uppercase tracking-wide">Add Money</h2>
+                </div>
+                <div class="px-4">
+                    <div class="bg-white rounded-lg p-8 shadow-sm border border-gray-200 mb-6 text-center">
+                        <label class="block text-gray-500 text-sm font-bold mb-4 uppercase">Enter Amount</label>
+                        <input type="number" id="new-amount-input" value="100" class="w-full border-b-2 border-gray-300 py-2 text-center text-3xl font-bold">
+                        <button onclick="goToMethodStep()" class="w-full bg-sky-600 text-white font-bold py-3.5 rounded shadow-lg mt-6 text-sm">PROCEED TO PAYMENT</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="am-step-2" class="hidden step-transition h-screen flex flex-col bg-[#f0f4f7]">
+                <div class="bg-white p-3 flex items-center justify-between shadow-sm">
+                    <button onclick="backToAmountStep()" class="text-gray-500"><i class="fas fa-arrow-left text-lg"></i></button>
+                    <h2 class="text-gray-700 font-bold">Select Payment</h2>
+                    <button onclick="showSec('home')" class="text-gray-400"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <button onclick="goToPaymentPage('bKash', 'theme-bkash', 'https://i.ibb.co.com/rGGYx0pq/download.png')" class="w-full bg-white p-4 rounded-lg shadow border border-pink-500 font-bold text-pink-600 flex items-center justify-center gap-2">bKash Auto Pay</button>
+                    <button onclick="goToPaymentPage('Nagad', 'theme-nagad', 'https://i.ibb.co.com/fdvN0pYh/Nagad-Logo-full-498x700-copy.jpg')" class="w-full bg-white p-4 rounded-lg shadow border border-orange-500 font-bold text-orange-600 flex items-center justify-center gap-2">Nagad Auto Pay</button>
+                </div>
+            </div>
+
+            <div id="am-step-3" class="hidden step-transition min-h-screen bg-[#f0f4f7] p-4">
+                <div class="bg-white p-3 shadow-sm flex justify-between items-center mb-4">
+                    <button onclick="backToMethodStep()" class="text-gray-600"><i class="fas fa-arrow-left"></i></button>
+                    <span class="font-bold text-sm">Verify Payment</span>
+                    <button onclick="showSec('home')" class="text-gray-400"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="payment-theme-card" class="p-5 rounded-xl shadow-lg bg-sky-600 text-white mb-4">
+                    <h3 class="font-bold text-lg mb-3">Transaction ID</h3>
+                    <input type="text" id="pay-trx-input" class="w-full bg-white text-gray-800 py-3 rounded text-center text-sm font-bold" placeholder="TRX ID">
+                </div>
+                <button onclick="handleNewVerify()" class="w-full bg-red-600 text-white font-bold py-3.5 rounded-xl shadow-lg">VERIFY</button>
+            </div>
+        </section>
+
+        <section id="account-sec" class="hidden animate-fade-in pb-24 bg-[#f6f8fa] min-h-screen p-4">
+            <div class="flex flex-col items-center pt-4 text-center">
+                <h2 id="acc-profile-name" class="text-lg font-bold text-gray-800">User</h2>
+                <p id="acc-email" class="text-xs text-gray-500">user@email.com</p>
+                <p class="text-sm font-bold text-sky-600 mt-2">Balance: ৳<span id="acc-profile-balance">0</span></p>
+            </div>
+            <button onclick="handleLogout()" class="w-full mt-8 p-3 bg-red-600 text-white rounded-xl font-bold text-sm">Log Out</button>
+        </section>
+    </main>
+
+    <nav id="bottom-nav" class="fixed bottom-0 w-full bg-white border-t py-3 px-6 shadow-md z-40 left-0 right-0 flex justify-between">
+        <button onclick="showSec('home')" id="nav-home" class="nav-item flex flex-col items-center text-gray-700 active-tab"><i class="fas fa-home text-lg"></i><span class="text-[10px]">Home</span></button>
+        <button onclick="showSec('tutorial')" id="nav-tutorial" class="nav-item flex flex-col items-center text-gray-700"><i class="fas fa-play-circle text-lg"></i><span class="text-[10px]">Tutorial</span></button>
+        <button onclick="showSec('addmoney')" id="nav-addmoney" class="nav-item flex flex-col items-center text-gray-700"><i class="fas fa-wallet text-lg"></i><span class="text-[10px]">Add Money</span></button>
+        <button onclick="showSec('history')" id="nav-history" class="nav-item flex flex-col items-center text-gray-700"><i class="fas fa-history text-lg"></i><span class="text-[10px]">History</span></button>
+        <button onclick="showSec('account')" id="nav-account" class="nav-item flex flex-col items-center text-gray-700"><i class="fas fa-user text-lg"></i><span class="text-[10px]">Account</span></button>
+    </nav>
+</div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyA3B7DZ_JeY-a33zdixKmZ6oQrU2iEVsEk",
+    authDomain: "samim-firebase.firebaseapp.com",
+    projectId: "samim-firebase",
+    storageBucket: "samim-firebase.firebasestorage.app",
+    messagingSenderId: "521003542655",
+    appId: "1:521003542655:web:bbabcf2f24a0eaeeef774a"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+let currentUser = null;
+let userBalance = 0;
+
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const loader = document.getElementById('global-page-loader');
+        if (loader) loader.classList.add('fade-out');
+    }, 1000);
+});
+
+function showSec(secId) {
+    document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-tab'));
+    const target = document.getElementById(secId + '-sec');
+    if (target) target.classList.remove('hidden');
+    const navBtn = document.getElementById('nav-' + secId);
+    if (navBtn) navBtn.classList.add('active-tab');
+
+    if (secId === 'addmoney') {
+        const trxInput = document.getElementById('pay-trx-input');
+        if (trxInput) trxInput.value = '';
+    }
+}
+
+function goToMethodStep() {
+    document.getElementById('am-step-1').classList.add('hidden');
+    document.getElementById('am-step-2').classList.remove('hidden');
+}
+
+function backToAmountStep() {
+    const trxInput = document.getElementById('pay-trx-input');
+    if (trxInput) trxInput.value = '';
+    document.getElementById('am-step-2').classList.add('hidden');
+    document.getElementById('am-step-1').classList.remove('hidden');
+}
+
+function goToPaymentPage(method, themeClass, logoUrl) {
+    const trxInput = document.getElementById('pay-trx-input');
+    if (trxInput) trxInput.value = '';
+    document.getElementById('am-step-2').classList.add('hidden');
+    document.getElementById('am-step-3').classList.remove('hidden');
+}
+
+function backToMethodStep() {
+    const trxInput = document.getElementById('pay-trx-input');
+    if (trxInput) trxInput.value = '';
+    document.getElementById('am-step-3').classList.add('hidden');
+    document.getElementById('am-step-2').classList.remove('hidden');
+}
+
+function handleNewVerify() {
+    const trxInput = document.getElementById('pay-trx-input');
+    if (trxInput) trxInput.value = '';
+    showSec('home');
+}
+
+function handleGoogleAuth() {
+    showSec('home');
+}
+
+function handleLogout() {
+    currentUser = null;
+    showSec('home');
+}
+</script>
+</body>
+</html>

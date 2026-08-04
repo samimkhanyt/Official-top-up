@@ -539,6 +539,24 @@ class MainActivity : ComponentActivity() {
 
         val avatarColors = arrayOf("#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899")
 
+        // ScrollView for accounts list so all accounts are fully scrollable
+        val scrollView = android.widget.ScrollView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                0,
+                1f
+            ).apply { bottomMargin = 16 }
+            isScrollbarFadingEnabled = false
+        }
+
+        val scrollContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
         // Account list
         for (email in emails) {
             val displayName = email.split("@").firstOrNull()?.replace(".", " ")?.split(" ")
@@ -603,8 +621,11 @@ class MainActivity : ComponentActivity() {
             textLayout.addView(emailView)
             row.addView(textLayout)
 
-            container.addView(row)
+            scrollContainer.addView(row)
         }
+
+        scrollView.addView(scrollContainer)
+        container.addView(scrollView)
 
         // "Use another account" button
         val useAnotherRow = LinearLayout(this).apply {

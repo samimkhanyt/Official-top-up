@@ -729,6 +729,9 @@ class MainActivity : ComponentActivity() {
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             settings.javaScriptCanOpenWindowsAutomatically = true
             settings.setSupportMultipleWindows(true)
+            settings.useWideViewPort = true
+            settings.loadWithOverviewMode = true
+            settings.textZoom = 100
             settings.userAgentString = settings.userAgentString + " EspTopUpApp/1.0"
 
             webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")

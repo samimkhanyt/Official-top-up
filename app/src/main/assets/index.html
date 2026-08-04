@@ -600,7 +600,7 @@
 </head>
 <body class="select-none bg-slate-50 m-0 p-0">
 <div id="global-page-loader" class="relative">
-    <div class="w-32 h-32 bg-white border-2 border-gray-100 rounded-2xl shadow-lg flex items-center justify-center p-2 overflow-hidden aspect-square">
+    <div class="w-32 h-32 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden aspect-square">
         <img id="loader-logo-img" 
              src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" 
              alt="Logo" 
@@ -664,8 +664,10 @@
 
             <div class="relative z-10 w-full max-w-xl mx-auto text-center flex flex-col justify-between items-center min-h-[70vh]">
                 <div class="flex-1 flex flex-col items-center justify-center w-full my-auto">
-                    <div class="mb-8">
-                        <img src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" alt="Esp TopUp Logo" onerror="this.onerror=null;this.src='logo.png'" class="h-32 sm:h-44 object-contain filter drop-shadow-lg transform hover:scale-105 transition duration-300">
+                    <div class="mb-8 flex items-center justify-center">
+                        <div class="w-32 h-32 sm:w-40 sm:h-40 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden">
+                            <img src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" alt="Esp TopUp Logo" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-contain rounded-xl filter drop-shadow-sm transform hover:scale-105 transition duration-300">
+                        </div>
                     </div>
 
                     <h2 class="text-3xl sm:text-5xl font-black text-gray-800 mb-4 tracking-tight">
@@ -1644,7 +1646,7 @@
 </div>
 
 <script>
-const firebaseConfig = {
+const defaultFirebaseConfig = {
     apiKey: "AIzaSyA3B7DZ_JeY-a33zdixKmZ6oQrU2iEVsEk",
     authDomain: "samim-firebase.firebaseapp.com",
     projectId: "samim-firebase",
@@ -1653,6 +1655,19 @@ const firebaseConfig = {
     appId: "1:521003542655:web:bbabcf2f24a0eaeeef774a",
     measurementId: "G-SPBMDSXJVX"
 };
+
+let firebaseConfig = defaultFirebaseConfig;
+try {
+    const customCfg = localStorage.getItem('custom_firebase_config');
+    if (customCfg) {
+        const parsedCfg = JSON.parse(customCfg);
+        if (parsedCfg && parsedCfg.apiKey && parsedCfg.projectId) {
+            firebaseConfig = parsedCfg;
+        }
+    }
+} catch (e) {
+    console.error("Custom Firebase config parse error:", e);
+}
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();

@@ -343,7 +343,7 @@ class MainActivity : ComponentActivity() {
             setPadding(12, 12, 12, 12)
         }
         val logoView = ImageView(this).apply {
-            setImageResource(R.drawable.new_app_logo_icon)
+            setImageResource(R.drawable.app_launcher_logo_1785854861781)
             scaleType = ImageView.ScaleType.FIT_CENTER
         }
         logoContainer.addView(logoView)

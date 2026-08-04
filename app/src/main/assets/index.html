@@ -1427,8 +1427,8 @@
 
 <div id="verify-status-modal" onclick="hideVerifyStatusModal()" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden transition-opacity duration-300">
     <div onclick="event.stopPropagation()" class="bg-white rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center relative border border-gray-100 flex flex-col items-center justify-center animate-fade-in">
-        <div class="w-20 h-20 rounded-full overflow-hidden shadow-md border-2 border-sky-400 mb-4 p-0.5 bg-white flex items-center justify-center">
-            <img id="verify-modal-logo-img" src="logo.png" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-cover rounded-full" alt="App Logo">
+        <div class="w-24 h-24 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden mb-4 aspect-square">
+            <img id="verify-modal-logo-img" src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-contain rounded-xl" alt="App Logo">
         </div>
         <div id="verify-modal-spinner" class="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin my-2"></div>
         <div id="verify-modal-icon-box" class="hidden my-2"></div>
@@ -3848,14 +3848,7 @@ function showVerifyStatusModal(method) {
     const logoImg = document.getElementById('verify-modal-logo-img');
 
     if (logoImg) {
-        const cleanMethod = method ? method.trim().toLowerCase() : '';
-        if (cleanMethod === 'bkash') {
-            logoImg.src = 'https://i.ibb.co.com/YB85ZvHM/Gemini-Generated-Image-e4a6qie4a6qie4a6.png';
-        } else if (cleanMethod === 'nagad') {
-            logoImg.src = 'https://i.ibb.co.com/DHzbDRrM/585f1022-99bf-4b47-9393-ac531b3a5562.jpg';
-        } else {
-            logoImg.src = window.siteLogo || 'logo.png';
-        }
+        logoImg.src = 'https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg';
     }
 
     if (modal) modal.classList.remove('hidden');
@@ -3865,8 +3858,8 @@ function showVerifyStatusModal(method) {
         iconBox.innerHTML = '';
     }
     if (statusText) {
-        statusText.innerText = '';
-        statusText.className = 'text-base font-extrabold mt-1';
+        statusText.innerText = 'পেন্ডিং... ভেরিফাই করা হচ্ছে';
+        statusText.className = 'text-sm font-extrabold text-amber-600 mt-2';
     }
 }
 
@@ -3909,13 +3902,13 @@ function listenToDepositStatus(txKey) {
                 iconBox.innerHTML = '<i class="fas fa-check-circle text-emerald-500 text-5xl"></i>';
             }
             if (statusText) {
-                statusText.innerText = 'SUCCESS';
-                statusText.className = 'text-2xl font-black text-emerald-500 uppercase tracking-wider mt-2';
+                statusText.innerText = 'ডিপোজিট সফল!';
+                statusText.className = 'text-xl font-black text-emerald-600 uppercase tracking-wider mt-2';
             }
             setTimeout(() => {
                 hideVerifyStatusModal();
                 showCustomToast("ডিপোজিট সফল হয়েছে!");
-                if (currentUser) loadUserData(currentUser.uid);
+                if (currentUser && currentUser.uid) loadUserData(currentUser.uid);
                 showSec('home');
             }, 1800);
         } else if (status === 'rejected' || status === 'cancelled' || status === 'failed') {
@@ -3935,12 +3928,14 @@ function listenToDepositStatus(txKey) {
         }
     };
 
-    currentDepositListener = rtdb.ref('deposit_requests/' + txKey);
-    currentDepositListener.on('value', (snapshot) => {
-        if (!snapshot.exists()) return;
-        const data = snapshot.val();
-        handleStatusUpdate(data.status);
-    });
+    try {
+        currentDepositListener = rtdb.ref('deposit_requests/' + txKey);
+        currentDepositListener.on('value', (snapshot) => {
+            if (!snapshot.exists()) return;
+            const data = snapshot.val();
+            handleStatusUpdate(data.status);
+        });
+    } catch(e) {}
 
     try {
         currentFsDepositUnsub = db.collection('deposits').doc(txKey).onSnapshot((doc) => {
@@ -3955,8 +3950,8 @@ function listenToDepositStatus(txKey) {
 async function handleNewVerify() {
     const trxInput = document.getElementById('pay-trx-input');
     const rawTrx = trxInput ? trxInput.value.trim() : '';
-    const amount = currentDepositAmount;
-    const method = currentPaymentMethod;
+    const amount = currentDepositAmount || 0;
+    const method = currentPaymentMethod || 'bKash';
 
     if (method.toLowerCase() === 'rocket') {
         showCustomToast("রকেট বর্তমানে বন্ধ আছে");
@@ -3969,12 +3964,11 @@ async function handleNewVerify() {
     }
 
     if (/[a-z]/.test(rawTrx)) {
-        showCustomToast("ট্রানজেকশন আইডি ভুল");
+        showCustomToast("ট্রানজেকশন আইডি ভুল (English Capital Letter হতে হবে)");
         return;
     }
 
-    // Strict transaction code validation for bKash (10 alphanumeric uppercase) and Nagad (8 alphanumeric uppercase)
-    const cleanTrx = rawTrx.trim();
+    const cleanTrx = rawTrx.toUpperCase().trim();
     let isValidTrx = false;
 
     if (method.toLowerCase() === 'bkash') {
@@ -3999,77 +3993,93 @@ async function handleNewVerify() {
         return;
     }
 
-    try {
-        // 1. Check RTDB deposit_requests safely
-        try {
-            const snapshot = await rtdb.ref('deposit_requests').orderByChild('trxId').equalTo(cleanTrx).once('value');
-            if (snapshot.exists()) {
-                showCustomToast("আপনার ট্রানজেকশন আইডিটি ব্যবহৃত");
-                return;
-            }
-        } catch (eTrx) {
-            console.warn("RTDB index check fallback:", eTrx);
-        }
+    // Identify current user or active firebase auth user
+    const activeUser = currentUser || (firebase.auth() ? firebase.auth().currentUser : null);
+    const uid = activeUser ? (activeUser.uid || activeUser.id) : null;
+    const userEmail = activeUser ? (activeUser.email || 'user@app.com') : 'user@app.com';
 
-        // 2. Check Firestore deposits safely
+    if (!uid) {
+        showCustomToast("অনুগ্রহ করে পুনরায় লগইন করুন");
+        return;
+    }
+
+    // Safe duplicate check
+    let isUsed = false;
+    try {
+        const snapshot = await rtdb.ref('deposit_requests').orderByChild('trxId').equalTo(cleanTrx).once('value');
+        if (snapshot && snapshot.exists()) {
+            isUsed = true;
+        }
+    } catch (eTrx) {
+        console.warn("RTDB index check fallback:", eTrx);
+    }
+
+    if (!isUsed) {
         try {
             const fsSnap = await db.collection('deposits').where('trxId', '==', cleanTrx).get();
-            if (!fsSnap.empty) {
-                showCustomToast("আপনার ট্রানজেকশন আইডিটি ব্যবহৃত");
-                return;
+            if (fsSnap && !fsSnap.empty) {
+                isUsed = true;
             }
         } catch (fse) {}
+    }
 
-        if (trxInput) trxInput.value = "";
-        showVerifyStatusModal(method);
+    if (isUsed) {
+        showCustomToast("আপনার ট্রানজেকশন আইডিটি ব্যবহৃত");
+        return;
+    }
 
-        const txKey = rtdb.ref('deposit_requests').push().key;
-        const depositData = {
-            uid: currentUser.uid, 
-            userId: currentUser.uid,
-            userEmail: currentUser.email, 
-            method: method, 
-            trxId: cleanTrx, 
-            amount: amount, 
-            status: 'Pending', 
-            date: new Date().toLocaleString('en-GB'),
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        };
+    // Immediately show status modal with App Logo + Spinner!
+    if (trxInput) trxInput.value = "";
+    showVerifyStatusModal(method);
+
+    const txKey = rtdb.ref('deposit_requests').push().key || ('dep_' + Date.now());
+    const depositData = {
+        uid: uid, 
+        userId: uid,
+        userEmail: userEmail, 
+        method: method, 
+        trxId: cleanTrx, 
+        amount: amount, 
+        status: 'Pending', 
+        date: new Date().toLocaleString('en-GB'),
+        timestamp: (firebase.database.ServerValue && firebase.database.ServerValue.TIMESTAMP) ? firebase.database.ServerValue.TIMESTAMP : Date.now()
+    };
+
+    try {
         await rtdb.ref('deposit_requests/' + txKey).set(depositData);
+    } catch (rtdbErr) {
+        console.warn("RTDB deposit set warning:", rtdbErr);
+    }
 
-        try {
-            await db.collection('deposits').doc(txKey).set({
-                uid: currentUser.uid,
-                userId: currentUser.uid,
-                userEmail: currentUser.email,
-                method: method,
-                trxId: cleanTrx,
-                amount: amount,
-                status: 'pending',
-                date: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } catch (fsw) {}
-        
-        const tid = rtdb.ref('transactions/' + currentUser.uid).push().key;
-        await rtdb.ref('transactions/' + currentUser.uid + '/' + tid).set({
+    try {
+        await db.collection('deposits').doc(txKey).set({
+            uid: uid,
+            userId: uid,
+            userEmail: userEmail,
+            method: method,
+            trxId: cleanTrx,
+            amount: amount,
+            status: 'pending',
+            date: (firebase.firestore.FieldValue && firebase.firestore.FieldValue.serverTimestamp) ? firebase.firestore.FieldValue.serverTimestamp() : new Date()
+        });
+    } catch (fsw) {}
+    
+    try {
+        const tid = rtdb.ref('transactions/' + uid).push().key || ('tx_' + Date.now());
+        await rtdb.ref('transactions/' + uid + '/' + tid).set({
             type: 'Add Money', 
             amount: amount, 
             method: method, 
             trxId: cleanTrx, 
             status: 'Pending',
             date: new Date().toLocaleString('en-GB'), 
-            timestamp: firebase.database.ServerValue.TIMESTAMP
+            timestamp: (firebase.database.ServerValue && firebase.database.ServerValue.TIMESTAMP) ? firebase.database.ServerValue.TIMESTAMP : Date.now()
         });
-
-        const trxInput = document.getElementById('pay-trx-input');
-        if (trxInput) trxInput.value = '';
-
-        listenToDepositStatus(txKey);
-
-    } catch (e) {
-        hideVerifyStatusModal();
-        showCustomToast("সার্ভার ত্রুটি, আবার চেষ্টা করুন");
+    } catch (txErr) {
+        console.warn("RTDB transaction set warning:", txErr);
     }
+
+    listenToDepositStatus(txKey);
 }
 
 let userDepositListCache = [];

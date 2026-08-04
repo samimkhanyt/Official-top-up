@@ -343,7 +343,7 @@ class MainActivity : ComponentActivity() {
             setPadding(12, 12, 12, 12)
         }
         val logoView = ImageView(this).apply {
-            setImageResource(R.drawable.esp_topup_logo_official_v3_1785622770821)
+            setImageResource(R.drawable.new_app_logo_icon)
             scaleType = ImageView.ScaleType.FIT_CENTER
         }
         logoContainer.addView(logoView)
@@ -718,12 +718,19 @@ class MainActivity : ComponentActivity() {
             webView.isVerticalScrollBarEnabled = false
             webView.isHorizontalScrollBarEnabled = false
 
+            WebView.setWebContentsDebuggingEnabled(false)
+            webView.setOnLongClickListener { true }
+            webView.isLongClickable = false
+            webView.isHapticFeedbackEnabled = false
+
             val settings: WebSettings = webView.settings
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.databaseEnabled = true
             settings.allowFileAccess = true
             settings.allowContentAccess = true
+            settings.allowFileAccessFromFileURLs = false
+            settings.allowUniversalAccessFromFileURLs = false
             settings.cacheMode = WebSettings.LOAD_DEFAULT
             settings.mediaPlaybackRequiresUserGesture = false
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW

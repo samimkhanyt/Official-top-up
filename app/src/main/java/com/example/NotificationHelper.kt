@@ -23,7 +23,7 @@ object NotificationHelper {
     const val CHANNEL_NAME = "Esp TopUp Notifications"
     const val SERVICE_CHANNEL_ID = "esp_ongoing_service_channel"
     const val SERVICE_CHANNEL_NAME = "Esp TopUp Notice Service"
-    const val DEFAULT_LOGO_URL = "https://i.ibb.co.com/yB4XVFJ3/1000020023.jpg"
+    const val DEFAULT_LOGO_URL = "https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg"
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

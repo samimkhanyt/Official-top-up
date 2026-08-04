@@ -16,6 +16,23 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
+    <script>
+        // App Security & Anti-Tampering Protection
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.key === 'S')) || (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's'))) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        document.addEventListener('dragstart', function(e) { e.preventDefault(); });
+        document.addEventListener('selectstart', function(e) {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        });
+    </script>
+
     <style>
         /* Global Font: Poppins for everywhere except Home */
         body { 
@@ -585,11 +602,11 @@
 <div id="global-page-loader" class="relative">
     <div class="w-32 h-32 bg-white border-2 border-gray-100 rounded-2xl shadow-lg flex items-center justify-center p-2 overflow-hidden aspect-square">
         <img id="loader-logo-img" 
-             src="https://i.ibb.co.com/ksSXtjKG/1000020023.jpg" 
+             src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" 
              alt="Logo" 
              loading="eager" 
              fetchpriority="high" 
-             onerror="this.onerror=null;this.src='https://i.ibb.co.com/ksSXtjKG/1000020023.jpg'"
+             onerror="this.onerror=null;this.src='logo.png'"
              class="w-full h-full object-contain rounded-xl">
     </div>
 
@@ -648,7 +665,7 @@
             <div class="relative z-10 w-full max-w-xl mx-auto text-center flex flex-col justify-between items-center min-h-[70vh]">
                 <div class="flex-1 flex flex-col items-center justify-center w-full my-auto">
                     <div class="mb-8">
-                        <img src="https://i.ibb.co.com/ksSXtjKG/1000020023.jpg" alt="Esp TopUp Logo" onerror="this.onerror=null;this.src='https://i.ibb.co.com/ksSXtjKG/1000020023.jpg'" class="h-32 sm:h-44 object-contain filter drop-shadow-lg transform hover:scale-105 transition duration-300">
+                        <img src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" alt="Esp TopUp Logo" onerror="this.onerror=null;this.src='logo.png'" class="h-32 sm:h-44 object-contain filter drop-shadow-lg transform hover:scale-105 transition duration-300">
                     </div>
 
                     <h2 class="text-3xl sm:text-5xl font-black text-gray-800 mb-4 tracking-tight">
@@ -1448,7 +1465,7 @@
 
 <div id="custom-toast">
     <div class="toast-box">
-        <img src="https://i.ibb.co.com/ksSXtjKG/1000020023.jpg" onerror="this.onerror=null;this.src='https://i.ibb.co.com/ksSXtjKG/1000020023.jpg'" class="toast-logo-small" alt="Logo">
+        <img src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" onerror="this.onerror=null;this.src='logo.png'" class="toast-logo-small" alt="Logo">
         <span class="toast-text" id="toast-text-msg">মেসেজ এখানে আসবে</span>
     </div>
 </div>

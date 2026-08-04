@@ -1134,7 +1134,7 @@
                         মোবাইল ব্যাংকিং
                     </div>
                     
-                    <div class="w-full grid grid-cols-2 gap-4 bg-white p-4 rounded-b-lg shadow-sm border border-gray-200 border-t-0">
+                    <div id="payment-methods-grid" class="w-full grid grid-cols-2 gap-4 bg-white p-4 rounded-b-lg shadow-sm border border-gray-200 border-t-0">
                         <button onclick="goToPaymentPage('bKash', 'theme-bkash', 'https://i.ibb.co.com/rGGYx0pq/download.png')" 
                                 class="bg-white border border-gray-200 rounded-lg p-2 flex items-center justify-center hover:border-pink-500 hover:shadow-md transition h-16">
                             <img src="https://i.ibb.co.com/rGGYx0pq/download.png" class="h-8 object-contain">
@@ -1184,10 +1184,16 @@
                     <div id="payment-theme-card" class="rounded-xl shadow-lg overflow-hidden text-white mb-4 relative transition-colors duration-300">
                         <div class="p-5 text-center">
                             <h3 id="trx-title" data-en="Enter Transaction ID" data-bn="ট্রানজেকশন আইডি দিন" class="font-bold text-lg mb-3 drop-shadow-md">ট্রানজেকশন আইডি দিন</h3>
-                            <input type="text" id="pay-trx-input" 
-                                   class="w-full bg-white text-gray-800 text-center py-3 rounded text-sm font-bold shadow-inner focus:outline-none placeholder-gray-400" 
-                                   placeholder="ট্রানজেকশন আইডি দিন" data-placeholder-en="Enter Transaction ID" data-placeholder-bn="ট্রানজেকশন আইডি দিন">
-                            <p class="text-[11px] text-amber-200 mt-2 font-medium">* ইংরেজি অক্ষর অবশ্যই বড় হাতের (Capital Letter) হতে হবে</p>
+                            <div class="relative w-full">
+                                <input type="text" id="pay-trx-input" 
+                                       oninput="this.value = this.value.toUpperCase()"
+                                       class="w-full bg-white text-gray-800 text-center py-3 pl-3 pr-20 rounded text-sm font-bold shadow-inner focus:outline-none placeholder-gray-400 uppercase tracking-wider" 
+                                       placeholder="ট্রানজেকশন আইডি দিন" data-placeholder-en="Enter Transaction ID" data-placeholder-bn="ট্রানজেকশন আইডি দিন">
+                                <button onclick="pasteTrxCode()" type="button" 
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded transition shadow-sm flex items-center gap-1">
+                                    <i class="far fa-paste"></i> পেস্ট
+                                </button>
+                            </div>
                         </div>
 
                         <div id="instruction-box" class="bg-black/10 p-5 text-sm space-y-4 backdrop-blur-sm border-t border-white/20">
@@ -1425,7 +1431,7 @@
     </nav>
 </div>
 
-<div id="verify-status-modal" onclick="hideVerifyStatusModal()" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden transition-opacity duration-300">
+<div id="verify-status-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden transition-opacity duration-300">
     <div onclick="event.stopPropagation()" class="bg-white rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center relative border border-gray-100 flex flex-col items-center justify-center animate-fade-in">
         <div class="w-24 h-24 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden mb-4 aspect-square">
             <img id="verify-modal-logo-img" src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-contain rounded-xl" alt="App Logo">
@@ -1671,6 +1677,11 @@ try {
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+try {
+    db.settings({ experimentalForceLongPolling: true });
+} catch (e) {
+    console.log("Firestore settings error:", e);
+}
 const auth = firebase.auth();
 const rtdb = firebase.database();
 const myLink = document.getElementById('my-link-id');
@@ -1764,9 +1775,20 @@ function loadHowToVideo() {
 
 function updateVideoFrame() {
     const videoFrame = document.getElementById("new-tutorial-video");
-    if (videoFrame) {
-        videoFrame.src = `https://www.youtube.com/embed/${howToVideoId}`;
+    if (!videoFrame || !howToVideoId) return;
+
+    let embedUrl = howToVideoId.trim();
+    if (embedUrl.includes('youtube.com/watch?v=')) {
+        const videoId = embedUrl.split('v=')[1]?.split('&')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    } else if (embedUrl.includes('youtu.be/')) {
+        const videoId = embedUrl.split('youtu.be/')[1]?.split('?')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    } else if (!embedUrl.startsWith('http://') && !embedUrl.startsWith('https://')) {
+        embedUrl = `https://www.youtube.com/embed/${embedUrl}`;
     }
+
+    videoFrame.src = embedUrl;
 }
 let selectedGameId = null;
 let selectedGameName = "";
@@ -2492,6 +2514,44 @@ function handleLogout() {
     });
 }
 
+function listenToLivePushNotifications() {
+    if (typeof rtdb === 'undefined' || !rtdb || !currentUser || !currentUser.email) return;
+    const userEmail = currentUser.email.toLowerCase();
+    const lastNotifTimeKey = 'last_pushed_notif_time_' + currentUser.uid;
+    let lastSeenTime = parseInt(localStorage.getItem(lastNotifTimeKey) || Date.now());
+
+    try {
+        rtdb.ref('live_notifications').limitToLast(10).on('child_added', (snapshot) => {
+            const notif = snapshot.val();
+            if (!notif || !notif.clientTimestamp) return;
+            
+            if (notif.clientTimestamp > lastSeenTime) {
+                const target = notif.target;
+                const targetEmail = (notif.targetEmail || '').toLowerCase();
+                
+                if (target === 'all' || targetEmail === userEmail) {
+                    localStorage.setItem(lastNotifTimeKey, notif.clientTimestamp);
+                    lastSeenTime = notif.clientTimestamp;
+                    
+                    let iconType = 'info';
+                    if (notif.title && notif.title.includes('সফল')) iconType = 'success';
+                    else if (notif.title && (notif.title.includes('বাতিল') || notif.title.includes('ভুল'))) iconType = 'error';
+
+                    Swal.fire({
+                        title: notif.title || 'নোটিফিকেশন',
+                        text: notif.message || '',
+                        icon: iconType,
+                        confirmButtonText: 'ঠিক আছে',
+                        confirmButtonColor: '#0284c7'
+                    });
+                }
+            }
+        });
+    } catch(e) {
+        console.log("Notif listener error:", e);
+    }
+}
+
 auth.onAuthStateChanged((user) => {
     const loginContainer = document.getElementById('header-login-container');
     const userInfoHeader = document.getElementById('header-user-info');
@@ -2508,6 +2568,7 @@ auth.onAuthStateChanged((user) => {
         
         loadUserData(user.uid);
         if (typeof calculateUserStats === "function") calculateUserStats(user.uid);
+        listenToLivePushNotifications();
     } else {
         currentUser = null;
         if (loginContainer) loginContainer.classList.remove('hidden');
@@ -3763,25 +3824,102 @@ function backToAmountStep() {
     }
 }
 
+let adminPaymentConfig = null;
+if (typeof db !== 'undefined') {
+    db.collection("admin").doc("payment").onSnapshot(doc => {
+        if (doc.exists) {
+            adminPaymentConfig = doc.data();
+            renderPaymentMethodsGrid();
+        }
+    });
+}
+
+function renderPaymentMethodsGrid() {
+    const grid = document.getElementById('payment-methods-grid');
+    if (!grid) return;
+    
+    let html = `
+        <button onclick="goToPaymentPage('bKash', 'theme-bkash', 'https://i.ibb.co.com/rGGYx0pq/download.png')" 
+                class="bg-white border border-gray-200 rounded-lg p-2 flex items-center justify-center hover:border-pink-500 hover:shadow-md transition h-16">
+            <img src="https://i.ibb.co.com/rGGYx0pq/download.png" class="h-8 object-contain">
+        </button>
+        
+        <button onclick="goToPaymentPage('Nagad', 'theme-nagad', 'https://i.ibb.co.com/fdvN0pYh/Nagad-Logo-full-498x700-copy.jpg')" 
+                class="bg-white border border-gray-200 rounded-lg p-2 flex items-center justify-center hover:border-orange-500 hover:shadow-md transition h-16">
+            <img src="https://i.ibb.co.com/fdvN0pYh/Nagad-Logo-full-498x700-copy.jpg" class="h-8 object-contain">
+        </button>
+    `;
+
+    if (adminPaymentConfig && adminPaymentConfig.custom_method_logo) {
+        const customName = adminPaymentConfig.custom_method_name || 'Rocket';
+        const customLogo = adminPaymentConfig.custom_method_logo;
+        html += `
+            <button onclick="goToPaymentPage('${customName}', 'theme-custom', '${customLogo}')" 
+                    class="bg-white border border-gray-200 rounded-lg p-2 flex items-center justify-center hover:border-purple-500 hover:shadow-md transition h-16 col-span-2 sm:col-span-1">
+                <img src="${customLogo}" class="h-10 object-contain">
+            </button>
+        `;
+    }
+    grid.innerHTML = html;
+}
+
+function pasteTrxCode() {
+    try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText().then(text => {
+                if (text) {
+                    const input = document.getElementById('pay-trx-input');
+                    if (input) {
+                        input.value = text.trim().toUpperCase();
+                        showCustomToast("পেস্ট করা হয়েছে");
+                    }
+                } else {
+                    showCustomToast("ক্লিপবোর্ডে কিছু নেই");
+                }
+            }).catch(() => {
+                showCustomToast("পেস্ট করার অনুমতি দিন");
+            });
+        } else {
+            showCustomToast("পেস্ট করার সুবিধা উপলব্ধ নয়");
+        }
+    } catch (e) {
+        showCustomToast("পেস্ট করতে সমস্যা হয়েছে");
+    }
+}
+
 function goToPaymentPage(method, themeClass, logoUrl) {
     const trxInput = document.getElementById('pay-trx-input');
     if (trxInput) trxInput.value = '';
     currentPaymentMethod = method;
-    document.getElementById('pay-method-logo').src = logoUrl;
+    
+    const payMethodLogo = document.getElementById('pay-method-logo');
+    if (payMethodLogo) payMethodLogo.src = logoUrl;
+    
+    const siteLogoSmall = document.getElementById('pay-site-logo-small');
+    if (siteLogoSmall) siteLogoSmall.src = logoUrl;
+
     document.getElementById('pay-amount-display').innerText = currentDepositAmount;
     document.getElementById('pay-amount-text').innerText = currentDepositAmount;
     document.querySelectorAll('.method-name').forEach(el => el.innerText = method);
-    const themeCard = document.getElementById('payment-theme-card');
-    themeCard.className = `rounded-xl shadow-lg overflow-hidden text-white mb-6 relative transition-colors duration-300 ${themeClass}`;
     
+    const themeCard = document.getElementById('payment-theme-card');
+    themeCard.className = `rounded-xl shadow-lg overflow-hidden text-white mb-6 relative transition-colors duration-300 ${themeClass || 'bg-gradient-to-r from-sky-600 to-blue-700'}`;
+    
+    const instructionBox = document.getElementById('instruction-box');
+    if (adminPaymentConfig && (method.toLowerCase() !== 'bkash' && method.toLowerCase() !== 'nagad') && adminPaymentConfig.custom_method_instructions) {
+        instructionBox.innerHTML = adminPaymentConfig.custom_method_instructions;
+    }
+
     document.getElementById('pay-admin-number').innerText = "Loading...";
 
     if(activePaymentMethodListener) activePaymentMethodListener();
 
     activePaymentMethodListener = db.collection("admin").doc("payment").onSnapshot(doc => {
         if(doc.exists) {
-            const num = doc.data()[method.toLowerCase()] || "Not Available";
-            document.getElementById('pay-admin-number').innerText = num;
+            const data = doc.data();
+            const num = data[method.toLowerCase()] || data[method] || "Not Available";
+            const adminNumEl = document.getElementById('pay-admin-number');
+            if (adminNumEl) adminNumEl.innerText = num;
         }
     });
 
@@ -3847,8 +3985,20 @@ function showVerifyStatusModal(method) {
     const statusText = document.getElementById('verify-modal-status-text');
     const logoImg = document.getElementById('verify-modal-logo-img');
 
+    let modalLogo = 'https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg';
+    if (adminPaymentConfig) {
+        const m = (method || '').toLowerCase();
+        if (m === 'bkash' && adminPaymentConfig.bkash_modal_logo) {
+            modalLogo = adminPaymentConfig.bkash_modal_logo;
+        } else if (m === 'nagad' && adminPaymentConfig.nagad_modal_logo) {
+            modalLogo = adminPaymentConfig.nagad_modal_logo;
+        } else if (adminPaymentConfig.custom_method_modal_logo) {
+            modalLogo = adminPaymentConfig.custom_method_modal_logo;
+        }
+    }
+
     if (logoImg) {
-        logoImg.src = 'https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg';
+        logoImg.src = modalLogo;
     }
 
     if (modal) modal.classList.remove('hidden');
@@ -3858,8 +4008,8 @@ function showVerifyStatusModal(method) {
         iconBox.innerHTML = '';
     }
     if (statusText) {
-        statusText.innerText = 'পেন্ডিং... ভেরিফাই করা হচ্ছে';
-        statusText.className = 'text-sm font-extrabold text-amber-600 mt-2';
+        statusText.innerText = '';
+        statusText.className = 'hidden';
     }
 }
 

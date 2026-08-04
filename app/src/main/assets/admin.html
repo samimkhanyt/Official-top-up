@@ -218,11 +218,29 @@
                     </div>
 
                     <div class="card">
-                        <h3 class="text-lg font-bold text-white mb-5 border-b border-dark-border pb-3">Payment Admin Numbers</h3>
+                        <h3 class="text-lg font-bold text-white mb-5 border-b border-dark-border pb-3">Payment Admin Config & Custom Category</h3>
                         <div class="space-y-4">
-                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">bKash Number</label><input type="text" id="set-bkash" class="flat-input"></div>
-                            <div><label class="block text-xs text-gray-400 mb-1 font-semibold uppercase">Nagad Number</label><input type="text" id="set-nagad" class="flat-input"></div>
-                            <button onclick="saveSettings('payment')" class="flat-btn w-full mt-2"><i class="fas fa-save"></i> Save Payment Numbers</button>
+                            <div class="p-3 bg-dark-bg rounded-lg border border-dark-border space-y-3">
+                                <h4 class="text-xs font-bold text-pink-400 uppercase">bKash Settings</h4>
+                                <div><label class="block text-[11px] text-gray-400 mb-1 font-semibold uppercase">bKash Number</label><input type="text" id="set-bkash" class="flat-input"></div>
+                                <div><label class="block text-[11px] text-gray-400 mb-1 font-semibold uppercase">bKash Verify Modal Logo URL</label><input type="text" id="set-bkash-logo" class="flat-input" placeholder="https://..."></div>
+                            </div>
+
+                            <div class="p-3 bg-dark-bg rounded-lg border border-dark-border space-y-3">
+                                <h4 class="text-xs font-bold text-orange-400 uppercase">Nagad Settings</h4>
+                                <div><label class="block text-[11px] text-gray-400 mb-1 font-semibold uppercase">Nagad Number</label><input type="text" id="set-nagad" class="flat-input"></div>
+                                <div><label class="block text-[11px] text-gray-400 mb-1 font-semibold uppercase">Nagad Verify Modal Logo URL</label><input type="text" id="set-nagad-logo" class="flat-input" placeholder="https://..."></div>
+                            </div>
+
+                            <div class="p-3 bg-dark-bg rounded-lg border border-dark-border space-y-3">
+                                <h4 class="text-xs font-bold text-purple-400 uppercase">Rocket / Custom Method Category Settings</h4>
+                                <div><label class="block text-[11px] text-gray-400 mb-1 font-semibold uppercase">Custom Category Name (e.g. Rocket)</label><input type="text" id="set-custom-method-name" class="flat-input" placeholder="Rocket"></div>
+                                <div><label class="block text-[11px] text-gray-400 mb-1 font-semibold uppercase">Custom Method Banner / Category Logo URL</label><input type="text" id="set-custom-method-logo" class="flat-input" placeholder="https://..."></div>
+                                <div><label class="block text-[11px] text-gray-400 mb-1 font-semibold uppercase">Custom Method Verify Modal Logo URL</label><input type="text" id="set-custom-method-modal-logo" class="flat-input" placeholder="https://..."></div>
+                                <div><label class="block text-[11px] text-gray-400 mb-1 font-semibold uppercase">Custom Instructions HTML or Number</label><textarea id="set-custom-method-instructions" class="flat-input h-20 resize-none" placeholder="HTML code or instructions for Rocket..."></textarea></div>
+                            </div>
+
+                            <button onclick="saveSettings('payment')" class="flat-btn w-full mt-2"><i class="fas fa-save"></i> Save Payment Settings</button>
                         </div>
                     </div>
 
@@ -717,11 +735,14 @@
 
         let db = null;
         let rtdb = null;
-        let adminReferralBonusAmount = 10; // Default 10 Tk referral bonus
+        let adminReferralBonusAmount = 10;
         try {
             if (typeof firebase !== 'undefined') {
                 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
+                try {
+                    db.settings({ experimentalForceLongPolling: true });
+                } catch (e) {}
                 rtdb = firebase.database();
             }
         } catch (e) { console.error("Firebase init failed: ", e); }
@@ -731,27 +752,31 @@
         let allUsers = [], notifUsersList = [];
         let selectedUserId = null, selectedUserEmail = null, selectedUserName = null, selectedUserBal = 0;
         let currentUserHistory = { orders: [], deposits: [] }, currentHistoryTab = 'orders';
-        let activeRingtone = false, isFirstLoadOrders = true, isFirstLoadDeposits = true;
-        let isBalanceProcessing = false;
-        const ringtoneAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2013/2013-120.wav");
-        ringtoneAudio.loop = true;
+        let allOrdersList = [], currentOrderTab = 'pending';
+        let allDepositsList = [], currentDepositTab = 'pending';
+
+        function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val !== undefined ? val : ''; }
+        function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+        function setTxt(id, txt) { const el = document.getElementById(id); if (el) el.innerText = txt; }
 
         window.onload = function() {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
                 if (splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 700); }
-            }, 2000);
+            }, 1000);
             try {
                 switchView('dashboard');
                 if (db) { loadDashboardData(); initRealtimeAlerts(); loadSettings(); }
-            } catch(e) {}
+            } catch(e) { console.error(e); }
         };
 
-        function showLoading() { document.getElementById('loading-spinner').style.display = 'flex'; }
-        function hideLoading() { document.getElementById('loading-spinner').style.display = 'none'; }
+        function showLoading() { const el = document.getElementById('loading-spinner'); if(el) el.style.display = 'flex'; }
+        function hideLoading() { const el = document.getElementById('loading-spinner'); if(el) el.style.display = 'none'; }
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('sidebar-backdrop').classList.toggle('hidden');
+            const sb = document.getElementById('sidebar');
+            const sbb = document.getElementById('sidebar-backdrop');
+            if(sb) sb.classList.toggle('-translate-x-full');
+            if(sbb) sbb.classList.toggle('hidden');
         }
         function dbError(err) { console.error("DB Error: ", err); hideLoading(); }
 
@@ -763,14 +788,24 @@
             const navEl = document.getElementById('nav-' + viewId);
             if(navEl) navEl.classList.add('active');
             if (window.innerWidth < 1024) {
-                document.getElementById('sidebar').classList.add('-translate-x-full');
-                document.getElementById('sidebar-backdrop')?.classList.add('hidden');
+                const sb = document.getElementById('sidebar');
+                if(sb) sb.classList.add('-translate-x-full');
+                const sbb = document.getElementById('sidebar-backdrop');
+                if(sbb) sbb.classList.add('hidden');
             }
             if(!db) return;
             if(viewId === 'dashboard') loadDashboardData();
             if(viewId === 'settings' || viewId === 'popup') loadSettings();
             if(viewId === 'categories') loadCategories();
             if(viewId === 'services') loadServices();
+            if(viewId === 'products') {
+                if(param1) { currentServiceId = param1; currentServiceName = param2; currentServiceType = param3; }
+                loadProducts();
+            }
+            if(viewId === 'stock') {
+                if(param1) { currentProductId = param1; currentProductName = param2; }
+                loadStock();
+            }
             if(viewId === 'orders') loadOrders();
             if(viewId === 'deposits') loadDeposits();
             if(viewId === 'users') loadUsers();
@@ -781,275 +816,512 @@
             if(viewId === 'firebase-cfg') loadFirebaseConfigToAdmin();
         }
 
-        function loadFirebaseConfigToAdmin() {
-            const textarea = document.getElementById('input-firebase-config-code');
-            if (!textarea) return;
-            try {
-                const saved = localStorage.getItem('custom_firebase_config');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    textarea.value = "const firebaseConfig = " + JSON.stringify(parsed, null, 4) + ";";
-                } else {
-                    textarea.value = "const firebaseConfig = " + JSON.stringify(defaultFirebaseConfig, null, 4) + ";";
-                }
-            } catch(e) {
-                textarea.value = "const firebaseConfig = " + JSON.stringify(defaultFirebaseConfig, null, 4) + ";";
-            }
-        }
-
-        function saveFirebaseConfigFromAdmin() {
-            const rawCode = document.getElementById('input-firebase-config-code').value.trim();
-            if (!rawCode) {
-                Swal.fire({icon: 'error', title: 'Error', text: 'কোড বক্স খালি রাখা যাবে না!'});
-                return;
-            }
-            
-            try {
-                let clean = rawCode;
-                if (clean.includes('=')) {
-                    clean = clean.substring(clean.indexOf('=') + 1);
-                }
-                clean = clean.replace(/;/g, '').trim();
-                
-                let parsedObj = null;
-                try {
-                    parsedObj = JSON.parse(clean);
-                } catch (err) {
-                    parsedObj = Function('"use strict"; return (' + clean + ')')();
-                }
-                
-                if (!parsedObj || !parsedObj.apiKey || !parsedObj.projectId) {
-                    throw new Error("apiKey এবং projectId থাকতে হবে!");
-                }
-                
-                localStorage.setItem('custom_firebase_config', JSON.stringify(parsedObj));
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Firebase Config Saved!',
-                    text: 'নতুন ফায়ারবেজ কনফিগারেশন সেভ হয়েছে! পেজ রিলোড হচ্ছে...',
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.reload();
-                });
-            } catch(e) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Config Format',
-                    text: 'কোডটি সঠিক ফরম্যাটে নেই! হুবহু const firebaseConfig = {...} পেস্ট করুন। Error: ' + e.message
-                });
-            }
-        }
-
-        function resetFirebaseConfigToDefault() {
-            Swal.fire({
-                title: 'Reset Firebase Config?',
-                text: 'আপনি কি ডিফল্ট ফায়ারবেজ কনফিগারেশনে ফেরত যেতে চান?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Reset',
-                cancelButtonText: 'Cancel'
-            }).then((res) => {
-                if (res.isConfirmed) {
-                    localStorage.removeItem('custom_firebase_config');
-                    Swal.fire({icon: 'success', title: 'Reset Successful', text: 'ডিফল্ট কনফিগারেশন রিসেট হয়েছে। রিলোড হচ্ছে...', timer: 1500, showConfirmButton: false}).then(() => {
-                        window.location.reload();
-                    });
-                }
-            });
-        }
-
         function refreshData() {
             showLoading();
             setTimeout(() => { switchView('dashboard'); hideLoading(); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data Refreshed', showConfirmButton: false, timer: 1500}); }, 1000);
         }
 
         function initRealtimeAlerts() {
+            if(!db) return;
             db.collection('orders').where('status', '==', 'pending').onSnapshot(snap => {}, dbError);
             db.collection('deposits').where('status', '==', 'pending').onSnapshot(snap => {}, dbError);
         }
 
         function loadDashboardData() {
-            db.collection('users').get().then(snap => { document.getElementById('dash-users').innerText = snap.size; });
+            if(!db) return;
+            db.collection('users').get().then(snap => { setTxt('dash-users', snap.size); }).catch(dbError);
             db.collection('orders').get().then(snap => {
-                document.getElementById('dash-orders').innerText = snap.size;
+                setTxt('dash-orders', snap.size);
                 let rev = 0;
-                snap.forEach(doc => { if(doc.data().status === 'success') { rev += parseInt(doc.data().price || 0); } });
-                document.getElementById('dash-revenue').innerText = '৳' + rev;
-            });
-            db.collection('deposits').where('status', '==', 'pending').get().then(snap => { document.getElementById('dash-deposits').innerText = snap.size; });
+                snap.forEach(doc => { if(doc.data().status === 'success' || doc.data().status === 'Completed') { rev += parseInt(doc.data().price || doc.data().amount || 0); } });
+                setTxt('dash-revenue', '৳' + rev);
+            }).catch(dbError);
+            db.collection('deposits').where('status', '==', 'pending').get().then(snap => { setTxt('dash-deposits', snap.size); }).catch(dbError);
         }
 
         function loadSettings() {
+            if(!db) return;
             db.collection('settings').doc('general').get().then(doc => {
                 if(doc.exists) {
                     const d = doc.data();
-                    document.getElementById('set-sitename').value = d.siteName || '';
-                    document.getElementById('set-logo').value = d.logoUrl || '';
-                    document.getElementById('set-notice').value = d.notice || '';
-                    document.getElementById('set-applink').value = d.appLink || '';
-                    document.getElementById('set-referral-bonus').value = d.referralBonusAmount !== undefined ? d.referralBonusAmount : 10;
-                    adminReferralBonusAmount = parseFloat(document.getElementById('set-referral-bonus').value) || 10;
-                    document.getElementById('set-whatsapp').value = d.whatsapp || '';
-                    document.getElementById('set-telegram').value = d.telegram || '';
-                    document.getElementById('set-facebook').value = d.facebook || '';
-                    document.getElementById('set-youtube').value = d.youtube || '';
-                    document.getElementById('set-promo-img').value = d.promoImageUrl || '';
-                    document.getElementById('set-promo-link').value = d.promoImageLink || '';
-                    if(document.getElementById('set-autopay')) document.getElementById('set-autopay').checked = !!d.autoPayEnabled;
-                    document.getElementById('set-api-key').value = d.autoTopUpApiKey || '';
-                    document.getElementById('set-api-url').value = d.autoTopUpApiUrl || '';
-                    document.getElementById('set-api-callback').value = d.autoTopUpCallbackUrl || '';
-                    if(document.getElementById('set-launch-popup-enabled')) document.getElementById('set-launch-popup-enabled').checked = !!d.launchPopupEnabled;
-                    document.getElementById('set-launch-popup-title').value = d.launchPopupTitle || '';
-                    document.getElementById('set-launch-popup-img').value = d.launchPopupImg || '';
-                    document.getElementById('set-launch-popup-video').value = d.launchPopupVideo || '';
-                    document.getElementById('set-launch-popup-msg').value = d.launchPopupMsg || '';
+                    setVal('set-sitename', d.siteName);
+                    setVal('set-logo', d.logoUrl);
+                    setVal('set-notice', d.notice);
+                    setVal('set-applink', d.appLink);
+                    setVal('set-referral-bonus', d.referralBonusAmount !== undefined ? d.referralBonusAmount : 10);
+                    adminReferralBonusAmount = parseFloat(d.referralBonusAmount) || 10;
+                    setVal('set-whatsapp', d.whatsapp);
+                    setVal('set-telegram', d.telegram);
+                    setVal('set-facebook', d.facebook);
+                    setVal('set-youtube', d.youtube);
+                    setVal('set-promo-img', d.promoImageUrl);
+                    setVal('set-promo-link', d.promoImageLink);
+                    const ap = document.getElementById('set-autopay');
+                    if(ap) ap.checked = !!d.autoPayEnabled;
+                    setVal('set-api-key', d.autoTopUpApiKey);
+                    setVal('set-api-url', d.autoTopUpApiUrl);
+                    setVal('set-api-callback', d.autoTopUpCallbackUrl);
+                    const lpe = document.getElementById('set-launch-popup-enabled');
+                    if(lpe) lpe.checked = !!d.launchPopupEnabled;
+                    setVal('set-launch-popup-title', d.launchPopupTitle);
+                    setVal('set-launch-popup-img', d.launchPopupImg);
+                    setVal('set-launch-popup-video', d.launchPopupVideo);
+                    setVal('set-launch-popup-msg', d.launchPopupMsg);
                 }
-            });
+            }).catch(dbError);
+
             db.collection('settings').doc('videos').get().then(doc => {
-                if(doc.exists) { document.getElementById('set-tutorial-vid').value = doc.data().howToAddMoney || ''; }
-            });
+                if(doc.exists) setVal('set-tutorial-vid', doc.data().howToAddMoney || '');
+            }).catch(dbError);
+
             db.collection('admin').doc('payment').get().then(doc => {
                 if(doc.exists) {
                     const d = doc.data();
-                    document.getElementById('set-bkash').value = d.bKash || '';
-                    document.getElementById('set-nagad').value = d.Nagad || '';
+                    setVal('set-bkash', d.bKash);
+                    setVal('set-bkash-logo', d.bkash_modal_logo);
+                    setVal('set-nagad', d.Nagad);
+                    setVal('set-nagad-logo', d.nagad_modal_logo);
+                    setVal('set-custom-method-name', d.custom_method_name);
+                    setVal('set-custom-method-logo', d.custom_method_logo);
+                    setVal('set-custom-method-modal-logo', d.custom_method_modal_logo);
+                    setVal('set-custom-method-instructions', d.custom_method_instructions);
                 }
-            });
+            }).catch(dbError);
         }
 
         function saveSettings(type) {
+            if(!db) return;
             showLoading();
             let p1;
             if (type === 'general') {
-                const refBonus = parseFloat(document.getElementById('set-referral-bonus').value) || 10;
+                const refBonus = parseFloat(getVal('set-referral-bonus')) || 10;
                 adminReferralBonusAmount = refBonus;
                 p1 = db.collection('settings').doc('general').set({
-                    siteName: document.getElementById('set-sitename').value,
-                    logoUrl: document.getElementById('set-logo').value,
-                    notice: document.getElementById('set-notice').value,
-                    appLink: document.getElementById('set-applink').value,
+                    siteName: getVal('set-sitename'),
+                    logoUrl: getVal('set-logo'),
+                    notice: getVal('set-notice'),
+                    appLink: getVal('set-applink'),
                     referralBonusAmount: refBonus
                 }, {merge: true});
             } else if (type === 'social') {
                 p1 = db.collection('settings').doc('general').set({
-                    whatsapp: document.getElementById('set-whatsapp').value,
-                    telegram: document.getElementById('set-telegram').value,
-                    facebook: document.getElementById('set-facebook').value,
-                    youtube: document.getElementById('set-youtube').value
+                    whatsapp: getVal('set-whatsapp'),
+                    telegram: getVal('set-telegram'),
+                    facebook: getVal('set-facebook'),
+                    youtube: getVal('set-youtube')
                 }, {merge: true});
             } else if (type === 'payment') {
                 p1 = db.collection('admin').doc('payment').set({
-                    bKash: document.getElementById('set-bkash').value,
-                    Nagad: document.getElementById('set-nagad').value
+                    bKash: getVal('set-bkash'),
+                    bkash_modal_logo: getVal('set-bkash-logo'),
+                    Nagad: getVal('set-nagad'),
+                    nagad_modal_logo: getVal('set-nagad-logo'),
+                    custom_method_name: getVal('set-custom-method-name'),
+                    custom_method_logo: getVal('set-custom-method-logo'),
+                    custom_method_modal_logo: getVal('set-custom-method-modal-logo'),
+                    custom_method_instructions: getVal('set-custom-method-instructions')
                 }, {merge: true});
             } else if (type === 'advanced') {
+                const ap = document.getElementById('set-autopay');
                 p1 = db.collection('settings').doc('general').set({
-                    promoImageUrl: document.getElementById('set-promo-img').value,
-                    promoImageLink: document.getElementById('set-promo-link').value,
-                    autoPayEnabled: document.getElementById('set-autopay').checked,
-                    autoTopUpApiKey: document.getElementById('set-api-key').value,
-                    autoTopUpApiUrl: document.getElementById('set-api-url').value,
-                    autoTopUpCallbackUrl: document.getElementById('set-api-callback').value
+                    promoImageUrl: getVal('set-promo-img'),
+                    promoImageLink: getVal('set-promo-link'),
+                    autoPayEnabled: ap ? ap.checked : false,
+                    autoTopUpApiKey: getVal('set-api-key'),
+                    autoTopUpApiUrl: getVal('set-api-url'),
+                    autoTopUpCallbackUrl: getVal('set-api-callback')
                 }, {merge: true});
-                db.collection('settings').doc('videos').set({ howToAddMoney: document.getElementById('set-tutorial-vid').value }, {merge: true});
+                db.collection('settings').doc('videos').set({ howToAddMoney: getVal('set-tutorial-vid') }, {merge: true});
             } else if (type === 'popup') {
+                const lpe = document.getElementById('set-launch-popup-enabled');
                 p1 = db.collection('settings').doc('general').set({
-                    launchPopupEnabled: document.getElementById('set-launch-popup-enabled').checked,
-                    launchPopupTitle: document.getElementById('set-launch-popup-title').value,
-                    launchPopupImg: document.getElementById('set-launch-popup-img').value,
-                    launchPopupVideo: document.getElementById('set-launch-popup-video').value,
-                    launchPopupMsg: document.getElementById('set-launch-popup-msg').value
+                    launchPopupEnabled: lpe ? lpe.checked : false,
+                    launchPopupTitle: getVal('set-launch-popup-title'),
+                    launchPopupImg: getVal('set-launch-popup-img'),
+                    launchPopupVideo: getVal('set-launch-popup-video'),
+                    launchPopupMsg: getVal('set-launch-popup-msg')
                 }, {merge: true});
             }
             if(p1) {
-                p1.then(() => { hideLoading(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Saved successfully!', timer:1500, showConfirmButton:false}); });
-            }
+                p1.then(() => { hideLoading(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Saved successfully!', timer:1500, showConfirmButton:false}); }).catch(dbError);
+            } else { hideLoading(); }
         }
 
-        // USERS & DEVICE DETAILS DISPLAY WITH REFERRAL
-        function loadUsers() {
-            db.collection('users').onSnapshot(snap => {
-                allUsers = [];
-                snap.forEach(doc => allUsers.push({id: doc.id, ...doc.data()}));
-                document.getElementById('user-total-count').innerText = allUsers.length;
-                renderUsersGrid(allUsers);
+        // CATEGORIES MANAGEMENT
+        function loadCategories() {
+            if(!db) return;
+            db.collection('categories').orderBy('slot', 'asc').onSnapshot(snap => {
+                const list = document.getElementById('cat-list');
+                const srvCat = document.getElementById('srv-category');
+                if(list) list.innerHTML = '';
+                if(srvCat) srvCat.innerHTML = '<option value="">Select Category</option>';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    if(list) {
+                        list.innerHTML += `<tr>
+                            <td class="font-bold text-white">${d.name || ''}</td>
+                            <td><span class="text-orange-500 font-mono">${d.slot || 1}</span></td>
+                            <td class="text-center"><button onclick="deleteCategory('${doc.id}')" class="bg-red-500/20 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash"></i></button></td>
+                        </tr>`;
+                    }
+                    if(srvCat) {
+                        srvCat.innerHTML += `<option value="${doc.id}">${d.name || ''}</option>`;
+                    }
+                });
+            }, dbError);
+        }
+
+        function addCategory() {
+            const name = getVal('cat-name');
+            const slot = parseInt(getVal('cat-slot')) || 1;
+            if(!name) { Swal.fire('Error', 'ক্যাটাগরি নাম লিখুন', 'error'); return; }
+            showLoading();
+            db.collection('categories').add({ name, slot, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
+                .then(() => { setVal('cat-name', ''); setVal('cat-slot', ''); hideLoading(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Category Added', timer:1500, showConfirmButton:false}); })
+                .catch(dbError);
+        }
+
+        function deleteCategory(id) {
+            Swal.fire({ title: 'Delete Category?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete', confirmButtonColor: '#d33' }).then(r => {
+                if(r.isConfirmed) { db.collection('categories').doc(id).delete().catch(dbError); }
             });
         }
 
-        function searchUsers() {
-            const term = document.getElementById('user-search').value.toLowerCase();
-            const filtered = allUsers.filter(u =>
-                (u.email || '').toLowerCase().includes(term) ||
-                (u.name || '').toLowerCase().includes(term) ||
-                (u.deviceName || '').toLowerCase().includes(term) ||
-                (u.referralCode || '').toLowerCase().includes(term)
-            );
-            renderUsersGrid(filtered);
+        // SERVICES MANAGEMENT
+        function loadServices() {
+            if(!db) return;
+            db.collection('services').onSnapshot(snap => {
+                const list = document.getElementById('srv-list');
+                if(!list) return;
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const img = d.image || 'logo.png';
+                    list.innerHTML += `<tr>
+                        <td class="text-center"><img src="${img}" class="w-10 h-10 object-contain rounded mx-auto border border-dark-border"></td>
+                        <td class="font-bold text-white">${d.name || ''}</td>
+                        <td><span class="bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded text-xs uppercase font-mono">${d.type || 'uid'}</span></td>
+                        <td class="text-center">
+                            <button onclick="switchView('products', '${doc.id}', '${d.name}', '${d.type}')" class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded mr-2 hover:bg-blue-500 hover:text-white transition"><i class="fas fa-box"></i> Packages</button>
+                            <button onclick="deleteService('${doc.id}')" class="bg-red-500/20 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+            }, dbError);
         }
 
-        function renderUsersGrid(users) {
-            const grid = document.getElementById('user-grid');
-            grid.innerHTML = '';
-            if(users.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-20 bg-dark-panel/30 rounded-3xl border border-dashed border-dark-border"><p class="text-gray-500 font-medium">No users found.</p></div>`;
+        function addService() {
+            const name = getVal('srv-name');
+            const image = getVal('srv-image');
+            const category = getVal('srv-category');
+            const type = getVal('srv-type');
+            const rules = getVal('srv-rules');
+            if(!name) { Swal.fire('Error', 'সার্ভিস নাম দিন', 'error'); return; }
+            showLoading();
+            db.collection('services').add({ name, image, categoryId: category, type: type || 'uid', rules, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
+                .then(() => { setVal('srv-name', ''); setVal('srv-image', ''); setVal('srv-rules', ''); hideLoading(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Service Added', timer:1500, showConfirmButton:false}); })
+                .catch(dbError);
+        }
+
+        function deleteService(id) {
+            Swal.fire({ title: 'Delete Service?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete', confirmButtonColor: '#d33' }).then(r => {
+                if(r.isConfirmed) { db.collection('services').doc(id).delete().catch(dbError); }
+            });
+        }
+
+        // PRODUCTS / PACKAGES MANAGEMENT
+        function loadProducts() {
+            if(!db || !currentServiceId) return;
+            setTxt('prod-service-name', currentServiceName || '');
+            db.collection('services').doc(currentServiceId).collection('products').onSnapshot(snap => {
+                const list = document.getElementById('prod-list');
+                if(!list) return;
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const isCode = currentServiceType === 'code';
+                    list.innerHTML += `<tr>
+                        <td class="font-bold text-white">${d.name || ''}</td>
+                        <td class="text-green-400 font-bold">৳${d.price || 0}</td>
+                        <td>${isCode ? `<span class="text-xs text-amber-400 font-mono">In Stock: ${d.stockCount || 0}</span>` : '<span class="text-xs text-gray-500">N/A</span>'}</td>
+                        <td class="text-center">
+                            ${isCode ? `<button onclick="switchView('stock', '${doc.id}', '${d.name}')" class="bg-amber-500/20 text-amber-400 px-3 py-1 rounded mr-2 hover:bg-amber-500 hover:text-white transition"><i class="fas fa-key"></i> Stock</button>` : ''}
+                            <button onclick="deleteProduct('${doc.id}')" class="bg-red-500/20 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+            }, dbError);
+        }
+
+        function addProduct() {
+            if(!currentServiceId) return;
+            const name = getVal('prod-name');
+            const price = parseFloat(getVal('prod-price')) || 0;
+            if(!name || price <= 0) { Swal.fire('Error', 'প্যাকেজের নাম ও সঠিক দাম দিন', 'error'); return; }
+            showLoading();
+            db.collection('services').doc(currentServiceId).collection('products').add({ name, price, stockCount: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
+                .then(() => { setVal('prod-name', ''); setVal('prod-price', ''); hideLoading(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Package Added', timer:1500, showConfirmButton:false}); })
+                .catch(dbError);
+        }
+
+        function deleteProduct(prodId) {
+            if(!currentServiceId) return;
+            Swal.fire({ title: 'Delete Package?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete', confirmButtonColor: '#d33' }).then(r => {
+                if(r.isConfirmed) { db.collection('services').doc(currentServiceId).collection('products').doc(prodId).delete().catch(dbError); }
+            });
+        }
+
+        // STOCK MANAGEMENT
+        function loadStock() {
+            if(!db || !currentServiceId || !currentProductId) return;
+            setTxt('stock-prod-name', currentProductName || '');
+            db.collection('services').doc(currentServiceId).collection('products').doc(currentProductId).collection('stock').onSnapshot(snap => {
+                const list = document.getElementById('stock-list');
+                if(!list) return;
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `<tr>
+                        <td class="font-mono text-amber-400 font-bold">${d.code || ''}</td>
+                        <td class="text-xs text-gray-400">${d.date ? new Date(d.date).toLocaleString() : ''}</td>
+                        <td class="text-center"><button onclick="deleteStock('${doc.id}')" class="bg-red-500/20 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash"></i></button></td>
+                    </tr>`;
+                });
+            }, dbError);
+        }
+
+        function addStock() {
+            if(!currentServiceId || !currentProductId) return;
+            const text = getVal('stock-codes');
+            if(!text) return;
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if(lines.length === 0) return;
+            showLoading();
+            const batch = db.batch();
+            const prodRef = db.collection('services').doc(currentServiceId).collection('products').doc(currentProductId);
+            lines.forEach(code => {
+                const newDoc = prodRef.collection('stock').doc();
+                batch.set(newDoc, { code, used: false, date: Date.now() });
+            });
+            batch.update(prodRef, { stockCount: firebase.firestore.FieldValue.increment(lines.length) });
+            batch.commit().then(() => {
+                setVal('stock-codes', '');
+                hideLoading();
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:`${lines.length} Codes Uploaded`, timer:1500, showConfirmButton:false});
+            }).catch(dbError);
+        }
+
+        function deleteStock(stockId) {
+            if(!currentServiceId || !currentProductId) return;
+            const prodRef = db.collection('services').doc(currentServiceId).collection('products').doc(currentProductId);
+            prodRef.collection('stock').doc(stockId).delete().then(() => {
+                prodRef.update({ stockCount: firebase.firestore.FieldValue.increment(-1) });
+            }).catch(dbError);
+        }
+
+        // ORDERS MANAGEMENT
+        function loadOrders() {
+            if(!db) return;
+            db.collection('orders').orderBy('date', 'desc').onSnapshot(snap => {
+                allOrdersList = [];
+                snap.forEach(doc => allOrdersList.push({ id: doc.id, ...doc.data() }));
+                renderOrdersTable();
+            }, err => {
+                db.collection('orders').onSnapshot(snap => {
+                    allOrdersList = [];
+                    snap.forEach(doc => allOrdersList.push({ id: doc.id, ...doc.data() }));
+                    renderOrdersTable();
+                }, dbError);
+            });
+        }
+
+        function switchOrderTab(tab) {
+            currentOrderTab = tab;
+            ['pending', 'history', 'deleted'].forEach(t => {
+                const btn = document.getElementById('tab-order-' + t);
+                if(btn) {
+                    if(t === tab) btn.className = 'py-2 px-4 text-xs font-semibold rounded-md bg-blue-600 text-white shadow shadow-blue-500/20 transition-all';
+                    else btn.className = 'py-2 px-4 text-xs font-semibold rounded-md text-slate-400 hover:text-slate-200 hover:bg-[#1E2230] transition-all';
+                }
+            });
+            renderOrdersTable();
+        }
+
+        function filterOrders() { renderOrdersTable(); }
+
+        function renderOrdersTable() {
+            const list = document.getElementById('order-list');
+            if(!list) return;
+            list.innerHTML = '';
+            const search = getVal('order-search').toLowerCase();
+
+            const filtered = allOrdersList.filter(o => {
+                const statusMatches = currentOrderTab === 'pending' ? (o.status === 'pending' || o.status === 'Pending') :
+                                      (currentOrderTab === 'history' ? (o.status === 'success' || o.status === 'Completed' || o.status === 'rejected' || o.status === 'Rejected') :
+                                      (o.status === 'deleted' || o.isDeleted === true));
+                if(!statusMatches) return false;
+                if(!search) return true;
+                return (o.userEmail || '').toLowerCase().includes(search) ||
+                       (o.gameName || '').toLowerCase().includes(search) ||
+                       (o.playerId || '').toLowerCase().includes(search) ||
+                       (o.id || '').toLowerCase().includes(search);
+            });
+
+            if(filtered.length === 0) {
+                list.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-slate-500">No orders found.</td></tr>`;
                 return;
             }
-            users.forEach(u => {
-                const avatar = u.photoURL && u.photoURL !== 'logo.png' ? u.photoURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}&background=F49E0B&color=fff`;
-                const isOnline = u.isOnline === true;
-                const deviceName = u.deviceName || u.deviceModel || 'Unknown Device';
-                const resolution = u.screenResolution || 'N/A';
-                const refCode = u.referralCode || ('ESP-' + u.id.slice(0, 6).toUpperCase());
-                const refCount = u.totalReferCount || 0;
-                const refEarn = u.totalReferEarnings || 0;
 
-                grid.innerHTML += `
-                <div class="user-card bg-dark-panel p-6 rounded-[2rem] border border-dark-border flex flex-col gap-4 relative overflow-hidden">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-center gap-3">
-                            <img src="${avatar}" class="w-16 h-16 rounded-2xl border-2 border-dark-border object-cover">
-                            <div>
-                                <h4 class="text-white font-bold text-lg tracking-tight truncate">${u.name || 'Anonymous User'}</h4>
-                                <p class="text-xs text-gray-400 truncate font-medium">${u.email || 'No email'}</p>
-                                <span class="text-[10px] text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded font-mono">Ref: ${refCode}</span>
-                            </div>
-                        </div>
-                        <div>
-                            ${isOnline ? '<span class="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded">ONLINE</span>' : '<span class="text-[10px] font-bold text-gray-400 bg-gray-500/10 px-2 py-1 rounded">OFFLINE</span>'}
-                        </div>
-                    </div>
+            filtered.forEach(o => {
+                const st = o.status || 'pending';
+                let statusBadge = `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">Pending</span>`;
+                if(st === 'success' || st === 'Completed') statusBadge = `<span class="bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">Completed</span>`;
+                else if(st === 'rejected' || st === 'Rejected') statusBadge = `<span class="bg-red-500/10 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">Rejected</span>`;
 
-                    <!-- PHONE HARDWARE DETAILS -->
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-dark-bg/60 p-3 rounded-2xl border border-dark-border/60">
-                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-0.5">PHONE MODEL</span>
-                            <span class="text-xs text-gray-200 font-semibold truncate block"><i class="fas fa-mobile-alt mr-1 text-orange-500"></i> ${deviceName}</span>
-                            <span class="text-[10px] text-gray-400 block mt-0.5">Screen: ${resolution}</span>
-                        </div>
-                        <div class="bg-dark-bg/60 p-3 rounded-2xl border border-dark-border/60">
-                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-0.5">REFERRAL STATS</span>
-                            <span class="text-xs text-green-400 font-bold block">${refCount} Friends</span>
-                            <span class="text-[10px] text-orange-400 font-semibold block">Earned: ৳${refEarn}</span>
-                        </div>
-                    </div>
-
-                    <!-- BALANCE & ACTIONS -->
-                    <div class="pt-3 border-t border-dark-border/50 flex items-center justify-between">
-                        <div>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase">AVAILABLE BALANCE</p>
-                            <p class="text-xl font-black text-white"><span class="text-orange-500">৳</span>${(u.balance || 0).toLocaleString()}</p>
-                        </div>
-                        <button onclick="openUserModal('${u.id}')" class="px-4 py-2 bg-orange-500/20 hover:bg-orange-500 text-orange-500 hover:text-white rounded-xl text-xs font-bold transition">
-                            <i class="fas fa-sliders-h mr-1"></i> Manage
-                        </button>
-                    </div>
-                </div>`;
+                list.innerHTML += `<tr class="hover:bg-[#161B26]/60 transition-colors">
+                    <td class="p-4 border-b border-[#1E2230]">
+                        <div class="font-semibold text-slate-200 text-xs">${o.userEmail || 'Guest'}</div>
+                        <div class="text-[10px] text-slate-500">${o.date ? new Date(o.date).toLocaleString() : ''}</div>
+                    </td>
+                    <td class="p-4 border-b border-[#1E2230]">
+                        <div class="font-bold text-blue-400 text-xs">${o.gameName || o.serviceName || 'TopUp'}</div>
+                        <div class="text-xs text-slate-300 font-medium">${o.productName || o.package || ''}</div>
+                    </td>
+                    <td class="p-4 border-b border-[#1E2230]">
+                        <div class="font-mono text-xs text-slate-200 font-bold">${o.playerId || o.playerID || o.uid || 'N/A'}</div>
+                        ${o.code ? `<div class="text-[11px] text-amber-400 font-mono mt-0.5">Code: ${o.code}</div>` : ''}
+                    </td>
+                    <td class="p-4 border-b border-[#1E2230] font-bold text-green-400 text-sm">৳${o.price || o.amount || 0}</td>
+                    <td class="p-4 border-b border-[#1E2230]">${statusBadge}</td>
+                    <td class="p-4 border-b border-[#1E2230] text-center">
+                        ${st === 'pending' || st === 'Pending' ? `
+                            <button onclick="approveOrder('${o.id}')" class="bg-green-600/20 text-green-400 border border-green-600/30 hover:bg-green-600 hover:text-white px-2.5 py-1 rounded text-xs font-bold mr-1 transition"><i class="fas fa-check"></i></button>
+                            <button onclick="rejectOrder('${o.id}')" class="bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded text-xs font-bold mr-1 transition"><i class="fas fa-times"></i></button>
+                        ` : ''}
+                        <button onclick="deleteOrder('${o.id}')" class="bg-slate-700/40 text-slate-400 hover:text-red-400 px-2 py-1 rounded text-xs transition"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
             });
         }
 
-        // DEPOSIT APPROVE WITH AUTOMATIC REFERRAL BONUS SYSTEM
+        function approveOrder(docId) {
+            showLoading();
+            const order = allOrdersList.find(o => o.id === docId);
+            db.collection('orders').doc(docId).update({ status: 'success', approvedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => {
+                if(rtdb) rtdb.ref('orders/' + docId).update({ status: 'Completed' }).catch(e => {});
+                if(order && order.userEmail) {
+                    sendInstantStatusNotification("অর্ডার সফল ✅", `আপনার ${order.gameName || 'টপআপ'} অর্ডার সফলভাবে সম্পন্ন হয়েছে।`, order.userEmail);
+                }
+                hideLoading();
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Order Approved!', timer:1500, showConfirmButton:false});
+            }).catch(dbError);
+        }
+
+        function rejectOrder(docId) {
+            Swal.fire({ title: 'Reject Order?', input: 'text', inputPlaceholder: 'Reason for rejection...', showCancelButton: true, confirmButtonText: 'Reject', confirmButtonColor: '#d33' }).then(r => {
+                if(r.value !== undefined) {
+                    showLoading();
+                    const order = allOrdersList.find(o => o.id === docId);
+                    const reason = r.value || 'Rejected by Admin';
+                    db.collection('orders').doc(docId).update({ status: 'rejected', rejectReason: reason }).then(() => {
+                        if(rtdb) rtdb.ref('orders/' + docId).update({ status: 'Rejected' }).catch(e => {});
+                        if(order && order.userId && (order.price || order.amount)) {
+                            const refundAmt = parseFloat(order.price || order.amount || 0);
+                            if(refundAmt > 0) {
+                                db.collection('users').doc(order.userId).update({ balance: firebase.firestore.FieldValue.increment(refundAmt) }).catch(e => {});
+                            }
+                        }
+                        if(order && order.userEmail) {
+                            sendInstantStatusNotification("অর্ডার বাতিল ❌", `আপনার অর্ডারটি বাতিল করা হয়েছে। টাকা ওয়ালেটে রিফান্ড করা হয়েছে।`, order.userEmail);
+                        }
+                        hideLoading();
+                        Swal.fire({toast:true, position:'top-end', icon:'info', title:'Order Rejected & Refunded', timer:1500, showConfirmButton:false});
+                    }).catch(dbError);
+                }
+            });
+        }
+
+        function deleteOrder(docId) {
+            Swal.fire({ title: 'Delete Order?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete', confirmButtonColor: '#d33' }).then(r => {
+                if(r.isConfirmed) { db.collection('orders').doc(docId).delete().catch(dbError); }
+            });
+        }
+
+        // DEPOSITS MANAGEMENT
+        function loadDeposits() {
+            if(!db) return;
+            db.collection('deposits').orderBy('date', 'desc').onSnapshot(snap => {
+                allDepositsList = [];
+                snap.forEach(doc => allDepositsList.push({ id: doc.id, ...doc.data() }));
+                renderDepositsTable();
+            }, err => {
+                db.collection('deposits').onSnapshot(snap => {
+                    allDepositsList = [];
+                    snap.forEach(doc => allDepositsList.push({ id: doc.id, ...doc.data() }));
+                    renderDepositsTable();
+                }, dbError);
+            });
+        }
+
+        function switchDepositTab(tab) {
+            currentDepositTab = tab;
+            ['pending', 'history', 'deleted'].forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                if(btn) {
+                    if(t === tab) btn.className = 'py-2.5 px-5 text-sm font-semibold border-b-2 border-[#F49E0B] text-[#F49E0B] transition-all';
+                    else btn.className = 'py-2.5 px-5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-all';
+                }
+            });
+            renderDepositsTable();
+        }
+
+        function filterDeposits() { renderDepositsTable(); }
+
+        function renderDepositsTable() {
+            const list = document.getElementById('deposit-list');
+            if(!list) return;
+            list.innerHTML = '';
+            const search = getVal('deposit-search').toLowerCase();
+
+            const filtered = allDepositsList.filter(d => {
+                const statusMatches = currentDepositTab === 'pending' ? (d.status === 'pending' || d.status === 'Pending') :
+                                      (currentDepositTab === 'history' ? (d.status === 'approved' || d.status === 'Approved' || d.status === 'rejected' || d.status === 'Rejected') :
+                                      (d.status === 'deleted' || d.isDeleted === true));
+                if(!statusMatches) return false;
+                if(!search) return true;
+                return (d.userEmail || '').toLowerCase().includes(search) ||
+                       (d.trxId || '').toLowerCase().includes(search) ||
+                       (d.method || '').toLowerCase().includes(search);
+            });
+
+            if(filtered.length === 0) {
+                list.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-gray-500">No deposit requests found.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(d => {
+                const st = d.status || 'pending';
+                let statusBadge = `<span class="bg-orange-500/10 text-orange-500 px-2 py-1 rounded text-xs">Pending</span>`;
+                if(st === 'approved' || st === 'Approved') statusBadge = `<span class="bg-green-500/10 text-green-400 px-2 py-1 rounded text-xs">Approved</span>`;
+                else if(st === 'rejected' || st === 'Rejected') statusBadge = `<span class="bg-red-500/10 text-red-500 px-2 py-1 rounded text-xs">Rejected</span>`;
+
+                list.innerHTML += `<tr>
+                    <td>${d.userEmail || 'User'}</td>
+                    <td><span class="text-orange-500 font-mono font-bold">${d.method || 'bKash'}</span></td>
+                    <td class="font-mono text-gray-300 font-bold">${d.trxId || ''}</td>
+                    <td class="text-green-400 font-bold">৳${d.amount || 0}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        ${st === 'pending' || st === 'Pending' ? `
+                            <button onclick="approveDeposit('${d.id}', '${d.userId}', ${d.amount}, '${d.userEmail}', '${d.trxId}')" class="bg-green-500/20 text-green-500 hover:bg-green-500 hover:text-white px-3 py-1 rounded mr-2 transition"><i class="fas fa-check"></i></button>
+                            <button onclick="rejectDeposit('${d.id}', '${d.userEmail}', '${d.trxId}', ${d.amount})" class="bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded transition mr-2"><i class="fas fa-times"></i></button>
+                        ` : ''}
+                        <button onclick="deleteDeposit('${d.id}')" class="bg-gray-700/40 text-gray-400 hover:text-red-400 px-2 py-1 rounded text-xs transition"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+        }
+
         async function approveDeposit(docId, userId, amount, email, trxId) {
             showLoading();
             try {
@@ -1065,7 +1337,6 @@
                     let currentBalance = parseFloat(uData.balance || 0);
                     let newBalance = currentBalance + parseFloat(amount);
                     
-                    // Check Referral Bonus condition
                     const refCode = uData.referredByCode;
                     const isPaid = uData.referralBonusPaid === true;
                     if (refCode && !isPaid && parseFloat(amount) > 0) {
@@ -1074,11 +1345,10 @@
 
                     transaction.update(userRef, { 
                         balance: newBalance,
-                        referralBonusPaid: true // Mark referral bonus as triggered for this user
+                        referralBonusPaid: true
                     });
                 });
 
-                // Award Referral Bonus to Referrer if eligible
                 const uDocAfter = await userRef.get();
                 const referredCode = uDocAfter.data()?.referredByCode;
                 if (referredCode && referralAwarded) {
@@ -1110,7 +1380,6 @@
                             balance: firebase.firestore.FieldValue.increment(refBonus),
                             totalReferEarnings: firebase.firestore.FieldValue.increment(refBonus)
                         });
-                        // Send Notification to Referrer
                         sendInstantStatusNotification(
                             "🎉 রেফার বোনাস প্রাপ্তি!",
                             `আপনার বন্ধু ডিপোজিট সম্পন্ন করায় আপনি ${refBonus} ৳ রেফার বোনাস পেয়েছেন!`,
@@ -1124,9 +1393,13 @@
                     approvedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
+                if (rtdb) {
+                    rtdb.ref('deposit_requests/' + docId).update({ status: 'Approved' }).catch(e => {});
+                }
+
                 sendInstantStatusNotification(
-                    "৳" + amount + " অ্যাড মানি সফল ✅",
-                    `আপনার TrxID: ${trxId} এর মাধ্যমে পাঠানো টাকা আপনার ওয়ালেটে যোগ করা হয়েছে।`,
+                    "ডিপোজিট সফল",
+                    `আপনার অ্যাকাউন্টে ${amount} টাকা এড হয়েছে`,
                     email
                 );
 
@@ -1154,62 +1427,126 @@
             }).then(r => {
                 if (r.value !== undefined) {
                     db.collection('deposits').doc(docId).update({ status: 'rejected', rejectReason: r.value || 'Rejected' });
-                    sendInstantStatusNotification("অ্যাড মানি বাতিল ❌", `আপনার ৳${amount} রিকোয়েস্ট বাতিল হয়েছে।`, email);
+                    if (rtdb) {
+                        rtdb.ref('deposit_requests/' + docId).update({ status: 'Rejected' }).catch(e => {});
+                    }
+                    sendInstantStatusNotification("ট্রানজেকশন বাতিল", "আপনার ট্রানজেকশন আইডিটি ভুল", email);
                 }
             });
         }
 
-        function loadDeposits() {
-            db.collection('deposits').orderBy('date', 'desc').onSnapshot(snap => {
-                const list = document.getElementById('deposit-list');
-                list.innerHTML = '';
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    if(d.status === 'pending') {
-                        list.innerHTML += `<tr>
-                            <td>${d.userEmail}</td><td><span class="text-orange-500 font-mono">${d.method}</span></td><td>${d.trxId}</td>
-                            <td class="text-green-400 font-bold">৳${d.amount}</td>
-                            <td><span class="bg-orange-500/10 text-orange-500 px-2 py-1 rounded">Pending</span></td>
-                            <td>
-                                <button onclick="approveDeposit('${doc.id}', '${d.userId}', ${d.amount}, '${d.userEmail}', '${d.trxId}')" class="bg-green-500/20 text-green-500 px-3 py-1 rounded mr-2"><i class="fas fa-check"></i></button>
-                                <button onclick="rejectDeposit('${doc.id}', '${d.userEmail}', '${d.trxId}', ${d.amount})" class="bg-red-500/20 text-red-500 px-3 py-1 rounded"><i class="fas fa-times"></i></button>
-                            </td>
-                        </tr>`;
-                    }
-                });
+        function deleteDeposit(docId) {
+            Swal.fire({ title: 'Delete Deposit Request?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete', confirmButtonColor: '#d33' }).then(r => {
+                if(r.isConfirmed) { db.collection('deposits').doc(docId).delete().catch(dbError); }
             });
         }
 
-        function sendInstantStatusNotification(title, message, targetEmail, targetSection = "home") {
-            if (!rtdb) return;
-            const docId = db.collection('push_notifications').doc().id;
-            const payload = {
-                title: title, message: message, logoUrl: "https://i.ibb.co/Gz46D8S/1000015293.jpg",
-                target: targetEmail === "all" ? "all" : "user", targetEmail: targetEmail.toLowerCase(),
-                targetSection: targetSection, clientTimestamp: Date.now()
-            };
-            rtdb.ref('live_notifications/' + docId).set(payload);
-            db.collection('push_notifications').doc(docId).set({ ...payload, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        // USERS MANAGEMENT
+        function loadUsers() {
+            if(!db) return;
+            db.collection('users').onSnapshot(snap => {
+                allUsers = [];
+                snap.forEach(doc => allUsers.push({id: doc.id, ...doc.data()}));
+                setTxt('user-total-count', allUsers.length);
+                renderUsersGrid(allUsers);
+            }, dbError);
+        }
+
+        function searchUsers() {
+            const term = getVal('user-search').toLowerCase();
+            const filtered = allUsers.filter(u =>
+                (u.email || '').toLowerCase().includes(term) ||
+                (u.name || '').toLowerCase().includes(term) ||
+                (u.deviceName || '').toLowerCase().includes(term) ||
+                (u.referralCode || '').toLowerCase().includes(term)
+            );
+            renderUsersGrid(filtered);
+        }
+
+        function renderUsersGrid(users) {
+            const grid = document.getElementById('user-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            if(users.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 bg-dark-panel/30 rounded-3xl border border-dashed border-dark-border"><p class="text-gray-500 font-medium">No users found.</p></div>`;
+                return;
+            }
+            users.forEach(u => {
+                const avatar = u.photoURL && u.photoURL !== 'logo.png' ? u.photoURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}&background=F49E0B&color=fff`;
+                const isOnline = u.isOnline === true;
+                const deviceName = u.deviceName || u.deviceModel || 'Unknown Device';
+                const resolution = u.screenResolution || 'N/A';
+                const refCode = u.referralCode || ('ESP-' + u.id.slice(0, 6).toUpperCase());
+                const refCount = u.totalReferCount || 0;
+                const refEarn = u.totalReferEarnings || 0;
+
+                grid.innerHTML += `
+                <div class="user-card bg-dark-panel p-6 rounded-[2rem] border border-dark-border flex flex-col gap-4 relative overflow-hidden">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <img src="${avatar}" class="w-16 h-16 rounded-2xl border-2 border-dark-border object-cover">
+                            <div>
+                                <h4 class="text-white font-bold text-lg tracking-tight truncate">${u.name || 'Anonymous User'}</h4>
+                                <p class="text-xs text-gray-400 truncate font-medium">${u.email || 'No email'}</p>
+                                <span class="text-[10px] text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded font-mono">Ref: ${refCode}</span>
+                            </div>
+                        </div>
+                        <div>
+                            ${isOnline ? '<span class="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded">ONLINE</span>' : '<span class="text-[10px] font-bold text-gray-400 bg-gray-500/10 px-2 py-1 rounded">OFFLINE</span>'}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-dark-bg/60 p-3 rounded-2xl border border-dark-border/60">
+                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-0.5">PHONE MODEL</span>
+                            <span class="text-xs text-gray-200 font-semibold truncate block"><i class="fas fa-mobile-alt mr-1 text-orange-500"></i> ${deviceName}</span>
+                            <span class="text-[10px] text-gray-400 block mt-0.5">Screen: ${resolution}</span>
+                        </div>
+                        <div class="bg-dark-bg/60 p-3 rounded-2xl border border-dark-border/60">
+                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-0.5">REFERRAL STATS</span>
+                            <span class="text-xs text-green-400 font-bold block">${refCount} Friends</span>
+                            <span class="text-[10px] text-orange-400 font-semibold block">Earned: ৳${refEarn}</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-dark-border/50 flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase">AVAILABLE BALANCE</p>
+                            <p class="text-xl font-black text-white"><span class="text-orange-500">৳</span>${(u.balance || 0).toLocaleString()}</p>
+                        </div>
+                        <button onclick="openUserModal('${u.id}')" class="px-4 py-2 bg-orange-500/20 hover:bg-orange-500 text-orange-500 hover:text-white rounded-xl text-xs font-bold transition">
+                            <i class="fas fa-sliders-h mr-1"></i> Manage
+                        </button>
+                    </div>
+                </div>`;
+            });
         }
 
         function openUserModal(uid) {
             const user = allUsers.find(u => u.id === uid);
             if (!user) return;
             selectedUserId = user.id; selectedUserEmail = user.email; selectedUserName = user.name || 'User'; selectedUserBal = parseFloat(user.balance || 0);
-            document.getElementById('modal-user-name').innerText = selectedUserName;
-            document.getElementById('modal-user-email').innerText = selectedUserEmail;
-            document.getElementById('modal-user-bal').innerText = selectedUserBal;
-            document.getElementById('modal-bal-input').value = '';
-            document.getElementById('user-manage-modal').classList.remove('hidden');
-            document.getElementById('user-manage-modal').style.display = 'flex';
+            const avatar = user.photoURL && user.photoURL !== 'logo.png' ? user.photoURL : `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUserName)}&background=F49E0B&color=fff`;
+            const modalImg = document.getElementById('modal-user-img');
+            if(modalImg) modalImg.src = avatar;
+            setTxt('modal-user-name', selectedUserName);
+            setTxt('modal-user-email', selectedUserEmail);
+            setTxt('modal-user-bal', selectedUserBal);
+            setVal('modal-bal-input', '');
+            const modal = document.getElementById('user-manage-modal');
+            if(modal) { modal.classList.remove('hidden'); modal.style.display = 'flex'; }
         }
+
         function closeUserModal() {
-            document.getElementById('user-manage-modal').classList.add('hidden');
-            document.getElementById('user-manage-modal').style.display = 'none';
+            const modal = document.getElementById('user-manage-modal');
+            if(modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
         }
+
         function modifyUserBalance(type) {
-            const amt = parseFloat(document.getElementById('modal-bal-input').value);
-            if(isNaN(amt) || amt <= 0) return;
+            const amt = parseFloat(getVal('modal-bal-input'));
+            if(isNaN(amt) || amt <= 0) { Swal.fire('Error', 'সঠিক টাকার পরিমাণ দিন', 'error'); return; }
+            if(!selectedUserId) return;
+            showLoading();
             const uRef = db.collection('users').doc(selectedUserId);
             db.runTransaction(async t => {
                 const doc = await t.get(uRef);
@@ -1217,8 +1554,244 @@
                 let newBal = type === 'add' ? bal + amt : (type === 'sub' ? Math.max(0, bal - amt) : amt);
                 t.update(uRef, { balance: newBal });
             }).then(() => {
+                hideLoading();
                 closeUserModal();
-                Swal.fire('Success', 'Balance updated successfully!', 'success');
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Balance updated successfully!', timer:1500, showConfirmButton:false});
+            }).catch(dbError);
+        }
+
+        // PUSH NOTIFICATIONS
+        function loadNotificationsHistory() {
+            if(!db) return;
+            db.collection('push_notifications').orderBy('clientTimestamp', 'desc').limit(20).onSnapshot(snap => {
+                const list = document.getElementById('notif-history');
+                if(!list) return;
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `<div class="p-3 bg-dark-bg rounded-xl border border-dark-border">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="font-bold text-orange-400 text-xs">${d.title || ''}</span>
+                            <span class="text-[10px] text-gray-500">${d.target === 'all' ? 'All Users' : (d.targetEmail || 'User')}</span>
+                        </div>
+                        <p class="text-xs text-gray-300">${d.message || ''}</p>
+                    </div>`;
+                });
+            }, dbError);
+        }
+
+        function toggleNotifTargetBox() {
+            const targetType = getVal('notif-target-type');
+            const box = document.getElementById('notif-email-box');
+            if(box) {
+                if(targetType === 'specific') box.classList.remove('hidden');
+                else box.classList.add('hidden');
+            }
+        }
+
+        function filterNotifUsers() {
+            const term = getVal('notif-user-search').toLowerCase();
+            const listEl = document.getElementById('notif-user-list');
+            if(!listEl) return;
+            listEl.innerHTML = '';
+            const matches = allUsers.filter(u => (u.name || '').toLowerCase().includes(term) || (u.email || '').toLowerCase().includes(term));
+            matches.slice(0, 10).forEach(u => {
+                listEl.innerHTML += `<div onclick="selectNotifUser('${u.id}', '${u.email}', '${u.name}')" class="p-2 border-b border-dark-border hover:bg-dark-bg cursor-pointer text-xs flex justify-between">
+                    <span class="font-bold text-white">${u.name || 'User'}</span>
+                    <span class="text-gray-400">${u.email || ''}</span>
+                </div>`;
+            });
+        }
+
+        function selectNotifUser(uid, email, name) {
+            setVal('notif-target-email', email);
+            setTxt('selected-user-display', `${name} (${email})`);
+        }
+
+        function sendCustomNotification() {
+            const targetType = getVal('notif-target-type');
+            const targetEmail = targetType === 'all' ? 'all' : getVal('notif-target-email');
+            const title = getVal('notif-title');
+            const message = getVal('notif-message');
+            const logo = getVal('notif-logo') || "https://i.ibb.co/Gz46D8S/1000015293.jpg";
+
+            if(!title || !message) { Swal.fire('Error', 'টাইটেল ও মেসেজ বক্স খালি রাখা যাবে না', 'error'); return; }
+            if(targetType === 'specific' && !targetEmail) { Swal.fire('Error', 'ইউজার সিলেক্ট করুন', 'error'); return; }
+
+            showLoading();
+            sendInstantStatusNotification(title, message, targetEmail);
+            setVal('notif-title', '');
+            setVal('notif-message', '');
+            setVal('notif-logo', '');
+            hideLoading();
+            Swal.fire({toast:true, position:'top-end', icon:'success', title:'Notification Sent!', timer:1500, showConfirmButton:false});
+        }
+
+        function sendInstantStatusNotification(title, message, targetEmail, targetSection = "home") {
+            if(!db) return;
+            const docId = db.collection('push_notifications').doc().id;
+            const payload = {
+                title: title, message: message, logoUrl: "https://i.ibb.co/Gz46D8S/1000015293.jpg",
+                target: targetEmail === "all" ? "all" : "user", targetEmail: (targetEmail || '').toLowerCase(),
+                targetSection: targetSection, clientTimestamp: Date.now()
+            };
+            if(rtdb) rtdb.ref('live_notifications/' + docId).set(payload).catch(e => {});
+            db.collection('push_notifications').doc(docId).set({ ...payload, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(e => {});
+        }
+
+        // UNPIN CODES
+        function loadUnpinCodes() {
+            if(!db) return;
+            db.collection('unpin_codes').onSnapshot(snap => {
+                const list = document.getElementById('unpin-list');
+                if(!list) return;
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `<tr>
+                        <td class="font-mono text-orange-400 font-bold">${d.code || ''}</td>
+                        <td class="text-xs text-gray-400">${d.date ? new Date(d.date).toLocaleString() : ''}</td>
+                        <td class="text-center"><button onclick="deleteUnpinCode('${doc.id}')" class="bg-red-500/20 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash"></i></button></td>
+                    </tr>`;
+                });
+            }, dbError);
+        }
+
+        function addUnpinCode() {
+            const code = getVal('unpin-code');
+            if(!code) return;
+            showLoading();
+            db.collection('unpin_codes').add({ code, date: Date.now() }).then(() => {
+                setVal('unpin-code', ''); hideLoading(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Unpin Code Saved', timer:1500, showConfirmButton:false});
+            }).catch(dbError);
+        }
+
+        function deleteUnpinCode(id) {
+            db.collection('unpin_codes').doc(id).delete().catch(dbError);
+        }
+
+        // TUTORIALS
+        function loadTutorials() {
+            if(!db) return;
+            db.collection('tutorials').onSnapshot(snap => {
+                const list = document.getElementById('tut-list');
+                if(!list) return;
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `<tr>
+                        <td class="text-center"><img src="${d.thumb || 'logo.png'}" class="w-12 h-8 object-cover rounded mx-auto border border-dark-border"></td>
+                        <td class="font-bold text-white text-xs">${d.title || ''}</td>
+                        <td class="text-xs text-blue-400 font-mono truncate max-w-xs">${d.link || ''}</td>
+                        <td class="text-center"><button onclick="deleteTutorial('${doc.id}')" class="bg-red-500/20 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash"></i></button></td>
+                    </tr>`;
+                });
+            }, dbError);
+        }
+
+        function addTutorial() {
+            const title = getVal('tut-title');
+            const link = getVal('tut-link');
+            const thumb = getVal('tut-thumb');
+            if(!title || !link) { Swal.fire('Error', 'টাইটেল ও লিংক দিন', 'error'); return; }
+            showLoading();
+            db.collection('tutorials').add({ title, link, thumb, date: Date.now() }).then(() => {
+                setVal('tut-title', ''); setVal('tut-link', ''); setVal('tut-thumb', ''); hideLoading();
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Tutorial Added', timer:1500, showConfirmButton:false});
+            }).catch(dbError);
+        }
+
+        function deleteTutorial(id) {
+            db.collection('tutorials').doc(id).delete().catch(dbError);
+        }
+
+        // BANNERS
+        function loadBanners() {
+            if(!db) return;
+            db.collection('banners').onSnapshot(snap => {
+                const list = document.getElementById('ban-list');
+                if(!list) return;
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `<tr>
+                        <td class="text-center"><img src="${d.image || ''}" class="w-24 h-12 object-cover rounded mx-auto border border-dark-border"></td>
+                        <td class="text-xs text-blue-400 font-mono truncate max-w-xs">${d.link || 'None'}</td>
+                        <td class="text-center"><button onclick="deleteBanner('${doc.id}')" class="bg-red-500/20 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash"></i></button></td>
+                    </tr>`;
+                });
+            }, dbError);
+        }
+
+        function addBanner() {
+            const image = getVal('ban-img');
+            const link = getVal('ban-link');
+            if(!image) { Swal.fire('Error', 'ইমেজ লিংক দিন', 'error'); return; }
+            showLoading();
+            db.collection('banners').add({ image, link, date: Date.now() }).then(() => {
+                setVal('ban-img', ''); setVal('ban-link', ''); hideLoading();
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Banner Added', timer:1500, showConfirmButton:false});
+            }).catch(dbError);
+        }
+
+        function deleteBanner(id) {
+            db.collection('banners').doc(id).delete().catch(dbError);
+        }
+
+        function previewPopup() {
+            const title = getVal('set-launch-popup-title') || 'নতুন আপডেট!';
+            const img = getVal('set-launch-popup-img');
+            const msg = getVal('set-launch-popup-msg') || 'পপআপ প্রিভিউ মেসেজ।';
+            let html = `<div class="text-left space-y-2">`;
+            if(img) html += `<img src="${img}" class="w-full h-32 object-cover rounded-xl mb-2">`;
+            html += `<p class="text-xs text-gray-300">${msg}</p></div>`;
+            Swal.fire({ title: title, html: html, confirmButtonText: 'ঠিক আছে', confirmButtonColor: '#F49E0B' });
+        }
+
+        // FIREBASE CONFIG EDITOR
+        function loadFirebaseConfigToAdmin() {
+            const textarea = document.getElementById('input-firebase-config-code');
+            if (!textarea) return;
+            try {
+                const saved = localStorage.getItem('custom_firebase_config');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    textarea.value = "const firebaseConfig = " + JSON.stringify(parsed, null, 4) + ";";
+                } else {
+                    textarea.value = "const firebaseConfig = " + JSON.stringify(defaultFirebaseConfig, null, 4) + ";";
+                }
+            } catch(e) {
+                textarea.value = "const firebaseConfig = " + JSON.stringify(defaultFirebaseConfig, null, 4) + ";";
+            }
+        }
+
+        function saveFirebaseConfigFromAdmin() {
+            const rawCode = getVal('input-firebase-config-code');
+            if (!rawCode) {
+                Swal.fire({icon: 'error', title: 'Error', text: 'কোড বক্স খালি রাখা যাবে না!'});
+                return;
+            }
+            try {
+                let clean = rawCode;
+                if (clean.includes('=')) clean = clean.substring(clean.indexOf('=') + 1);
+                clean = clean.replace(/;/g, '').trim();
+                let parsedObj = null;
+                try { parsedObj = JSON.parse(clean); } catch (err) { parsedObj = Function('"use strict"; return (' + clean + ')')(); }
+                if (!parsedObj || !parsedObj.apiKey || !parsedObj.projectId) throw new Error("apiKey এবং projectId থাকতে হবে!");
+                localStorage.setItem('custom_firebase_config', JSON.stringify(parsedObj));
+                Swal.fire({ icon: 'success', title: 'Firebase Config Saved!', text: 'নতুন ফায়ারবেজ কনফিগারেশন সেভ হয়েছে! পেজ রিলোড হচ্ছে...', timer: 2000, showConfirmButton: false })
+                    .then(() => { window.location.reload(); });
+            } catch(e) {
+                Swal.fire({ icon: 'error', title: 'Invalid Config Format', text: 'কোডটি সঠিক ফরম্যাটে নেই! Error: ' + e.message });
+            }
+        }
+
+        function resetFirebaseConfigToDefault() {
+            Swal.fire({ title: 'Reset Firebase Config?', text: 'আপনি কি ডিফল্ট ফায়ারবেজ কনফিগারেশনে ফেরত যেতে চান?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, Reset', cancelButtonText: 'Cancel' }).then((res) => {
+                if (res.isConfirmed) {
+                    localStorage.removeItem('custom_firebase_config');
+                    Swal.fire({icon: 'success', title: 'Reset Successful', text: 'ডিফল্ট কনফিগারেশন রিসেট হয়েছে। রিলোড হচ্ছে...', timer: 1500, showConfirmButton: false}).then(() => { window.location.reload(); });
+                }
             });
         }
     </script>

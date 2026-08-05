@@ -959,8 +959,8 @@
         window.onload = function() {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
-                if (splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 700); }
-            }, 1000);
+                if (splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 400); }
+            }, 300);
             try {
                 switchView('dashboard');
                 if (db) { loadDashboardData(); initRealtimeAlerts(); loadSettings(); }

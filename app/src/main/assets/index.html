@@ -1835,13 +1835,11 @@ let activeHistoryListener = null;
 let activeStatsListener = null;
 let activePaymentMethodListener = null;
 
-// Fast loader safety fallback: Guarantee loader hide within 800ms - 1200ms
+// Fast loader safety fallback: Guarantee loader hide immediately within 300ms - 500ms
 function scheduleFastLoaderHide() {
-    setTimeout(() => {
-        isSliderLoaded = true;
-        isCategoriesLoaded = true;
-        checkAndHideLoader();
-    }, 800);
+    isSliderLoaded = true;
+    isCategoriesLoaded = true;
+    checkAndHideLoader();
 
     setTimeout(() => {
         const loader = document.getElementById('global-page-loader');
@@ -1850,9 +1848,9 @@ function scheduleFastLoaderHide() {
             setTimeout(() => {
                 loader.style.display = 'none';
                 loader.classList.add('hidden');
-            }, 300);
+            }, 200);
         }
-    }, 1200);
+    }, 400);
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {

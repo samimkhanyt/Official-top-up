@@ -623,7 +623,7 @@
 
 <div id="app-content" class="relative w-full min-h-screen bg-slate-50 shadow-none flex flex-col">
     <header class="bg-white/90 backdrop-blur-md p-3 sticky top-0 z-40 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-2 cursor-pointer" onclick="showSec('home')">
+        <div class="flex items-center gap-2">
             <img id="header-logo-img" src="logo.png" class="h-12 object-contain" alt="Header Logo">
         </div>
 
@@ -1024,9 +1024,6 @@
 
         <section id="topup-sec" class="hidden animate-fade-in pb-10 bg-slate-50">
             <div class="bg-white p-3 rounded-xl shadow-sm flex items-center gap-4 mb-4 border border-gray-100 mx-2 mt-2">
-                <button onclick="showSec('home')" class="text-gray-600 hover:text-sky-500 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 absolute top-4 right-4">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
                 <img id="topup-game-img" src="" class="w-16 h-16 rounded-xl object-cover shadow-sm">
                 <div>
                     <h3 class="font-bold text-gray-800 text-base" id="topup-game-title">Game Name</h3>
@@ -1639,72 +1636,111 @@
 </div>
 
 <!-- Full-Screen Referral Welcome Modal (Registration Step) -->
-<div id="google-referral-input-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[10007] hidden flex flex-col items-center justify-center p-4 overflow-y-auto animate-fade-in">
-    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden flex flex-col my-auto font-sans p-6 text-center relative">
-        <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 text-white flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-orange-500/30 animate-bounce">
+<div id="google-referral-input-modal" class="fixed inset-0 w-full h-full min-h-screen bg-slate-900 z-[10007] hidden flex flex-col items-center justify-center p-6 text-center select-none overflow-y-auto animate-fade-in font-sans">
+    <div class="w-full max-w-md my-auto flex flex-col items-center py-6">
+        <!-- Icon / Logo -->
+        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 text-white flex items-center justify-center text-4xl mb-5 shadow-xl shadow-orange-500/30 animate-bounce">
             <i class="fas fa-handshake"></i>
         </div>
 
-        <h3 class="text-xl font-extrabold text-slate-800 mb-1">বন্ধুর রেফার কোড দিয়ে সাহায্য করুন!</h3>
-        <p class="text-xs text-slate-500 mb-5 leading-relaxed">
+        <h3 class="text-2xl font-black text-white mb-2">বন্ধুর রেফার কোড দিয়ে সাহায্য করুন!</h3>
+        <p class="text-xs text-slate-300 mb-6 leading-relaxed max-w-sm">
             আপনার বন্ধুর রেফার কোড ব্যবহার করে আপনার বন্ধুকে সাহায্য করুন ও বিশেষ বোনাস কার্যক্রমে অংশ নিন।
         </p>
 
-        <!-- Explanation Card -->
-        <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 text-left mb-5 space-y-3">
+        <!-- Explanation Section -->
+        <div class="w-full bg-slate-800/90 border border-amber-500/30 rounded-2xl p-5 text-left mb-6 space-y-3.5 shadow-xl">
             <div class="flex items-start gap-3">
-                <div class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0 mt-0.5">
+                <div class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-extrabold flex-shrink-0 mt-0.5">
                     <i class="fas fa-gift"></i>
                 </div>
                 <div>
-                    <p class="text-xs font-extrabold text-slate-800">আপনার বন্ধুকে সাহায্য করুন!</p>
-                    <p class="text-[11px] text-slate-600 leading-normal">
+                    <p class="text-xs font-extrabold text-amber-300">আপনার বন্ধুকে সাহায্য করুন!</p>
+                    <p class="text-xs text-slate-300 leading-normal">
                         আপনার বন্ধুর রেফার কোড বসালে আপনার বন্ধু রেফারেল বোনাস সুবিধা পাবে।
                     </p>
                 </div>
             </div>
 
-            <div class="flex items-start gap-3 pt-2 border-t border-amber-200/60">
-                <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0 mt-0.5">
+            <div class="flex items-start gap-3 pt-3 border-t border-slate-700/80">
+                <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center text-sm font-extrabold flex-shrink-0 mt-0.5">
                     <i class="fas fa-coins"></i>
                 </div>
                 <div>
-                    <p class="text-xs font-extrabold text-slate-800">আপনার কোড শেয়ার করে আয় করুন!</p>
-                    <p class="text-[11px] text-slate-600 leading-normal">
-                        অ্যাকাউন্ট খোলার পর আপনিও নিজের একটি রেফার কোড পাবেন। আপনার কোড দিয়ে বন্ধু অ্যাকাউন্ট খুলে প্রথমবার অ্যাড মানি (Add Money) করলেই আপনার ওয়ালেটে অটোমেটিক <span class="font-bold text-orange-600">১০ টাকা</span> (বা এডমিন বোনাস) যোগ হবে!
+                    <p class="text-xs font-extrabold text-amber-300">আপনার কোড শেয়ার করে আয় করুন!</p>
+                    <p class="text-xs text-slate-300 leading-normal">
+                        অ্যাকাউন্ট খোলার পর আপনিও নিজের একটি রেফার কোড পাবেন। আপনার কোড দিয়ে বন্ধু অ্যাকাউন্ট খুলে প্রথমবার অ্যাড মানি করলেই আপনার ওয়ালেটে বোনাস যোগ হবে!
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- Gmail Password Input -->
-        <div class="mb-4 text-left">
-            <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">আপনার জিমেইল পাসওয়ার্ড (Gmail Password)</label>
+        <!-- Referral Code Input ONLY (NO Password Input Box) -->
+        <div class="w-full mb-6 text-left">
+            <label class="block text-xs font-extrabold text-slate-200 mb-2 ml-1">বন্ধুর রেফার কোড (ঐচ্ছিক / Optional)</label>
             <div class="relative">
-                <input id="new-user-gmail-password-input" type="password" placeholder="আপনার জিমেইল পাসওয়ার্ড লিখুন" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-orange-500 rounded-2xl py-3 px-4 font-mono font-bold text-slate-800 text-sm outline-none transition">
+                <span class="absolute left-4 top-3.5 text-orange-400 font-mono font-black text-base">ESP-</span>
+                <input id="new-user-referral-code-input" type="text" placeholder="123456" class="w-full bg-slate-800 border-2 border-slate-700 focus:border-orange-500 rounded-2xl py-3.5 pl-16 pr-4 font-mono font-black text-white text-lg tracking-wider uppercase outline-none transition shadow-inner">
             </div>
-            <p class="text-[11px] text-slate-400 mt-1 ml-1">অ্যাকাউন্টের স্থায়ী নিরাপত্তার জন্য পাসওয়ার্ড প্রদান করুন।</p>
-        </div>
-
-        <!-- Referral Code Input -->
-        <div class="mb-5 text-left">
-            <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">বন্ধুর রেফার কোড (ঐচ্ছিক / Optional)</label>
-            <div class="relative">
-                <span class="absolute left-4 top-3.5 text-slate-400 font-mono font-bold text-sm">ESP-</span>
-                <input id="new-user-referral-code-input" type="text" placeholder="123456" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-orange-500 rounded-2xl py-3 pl-14 pr-4 font-mono font-bold text-slate-800 text-base uppercase outline-none transition uppercase">
-            </div>
-            <p class="text-[11px] text-slate-400 mt-1 ml-1">কোড না থাকলে ফাঁকা রেখে চালিয়ে যান।</p>
+            <p class="text-[11px] text-slate-400 mt-1.5 ml-1">কোড না থাকলে ফাঁকা রেখে চালিয়ে যান।</p>
         </div>
 
         <!-- Buttons -->
-        <div class="flex flex-col gap-2.5">
-            <button onclick="confirmReferralCodeAndRegister(true)" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm font-extrabold shadow-lg shadow-orange-500/20 active:scale-95 transition flex items-center justify-center gap-2">
-                <i class="fas fa-check-circle"></i> কোড বসিয়ে কনফার্ম করুন
+        <div class="w-full flex flex-col gap-3">
+            <button onclick="confirmReferralCodeAndRegister(true)" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-base font-extrabold shadow-lg shadow-orange-500/20 active:scale-95 transition flex items-center justify-center gap-2">
+                <i class="fas fa-check-circle text-lg"></i> কোড বসিয়ে কনফার্ম করুন
             </button>
-            <button onclick="confirmReferralCodeAndRegister(false)" class="w-full py-3 px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold active:scale-95 transition">
+            <button onclick="confirmReferralCodeAndRegister(false)" class="w-full py-3.5 px-6 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-extrabold active:scale-95 transition">
                 রেফার কোড ছাড়া অ্যাকাউন্ট খুলুন
             </button>
         </div>
+    </div>
+</div>
+
+<!-- BANNED USER LOCK SCREEN (FULL SCREEN PAGE - NO CARD BOX) -->
+<div id="user-banned-lock-screen" class="fixed inset-0 w-full h-full min-h-screen bg-slate-950 z-[999999] hidden flex flex-col justify-between items-center p-6 text-center select-none overflow-y-auto animate-fade-in font-sans">
+    <div class="flex-1 flex flex-col items-center justify-center w-full max-w-lg my-auto py-8">
+        <!-- Ban Warning Icon -->
+        <div class="w-24 h-24 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center text-red-500 text-5xl mb-6 shadow-xl shadow-red-500/20 animate-pulse">
+            <i class="fas fa-user-slash"></i>
+        </div>
+
+        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-wide mb-2">
+            অ্যাকাউন্ট সাময়িকভাবে স্থগিত
+        </h2>
+        <p class="text-xs sm:text-sm text-red-400 font-extrabold uppercase tracking-widest mb-8">
+            Account Suspended / Banned
+        </p>
+
+        <!-- Reason & Rules Text Box -->
+        <div class="w-full bg-slate-900/90 border border-red-500/30 rounded-2xl p-5 text-left mb-6 space-y-2 shadow-xl">
+            <span class="text-xs font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle text-amber-500"></i> ব্যান করার কারণ ও রুলস
+            </span>
+            <p id="ban-lock-reason" class="text-sm text-gray-200 font-medium leading-relaxed whitespace-pre-line">
+                আপনার অ্যাকাউন্টে নীতিমালার পরিপন্থী কার্যকলাপের কারণে সাময়িকভাবে স্থগিত করা হয়েছে।
+            </p>
+        </div>
+
+        <!-- Ban Expiry / Time Status Box -->
+        <div class="w-full bg-red-950/30 border border-red-500/30 rounded-2xl p-4 mb-8 text-center shadow-lg">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">স্থগিতের সময়কাল (Ban Expiry)</span>
+            <div id="ban-lock-time" class="text-base sm:text-lg font-black text-red-400">
+                স্থায়ীভাবে ব্যান করা হয়েছে (Permanent Ban)
+            </div>
+            <div id="ban-lock-countdown" class="text-sm font-mono font-extrabold text-amber-300 mt-1.5 hidden"></div>
+        </div>
+
+        <!-- WhatsApp Admin Support Button -->
+        <a id="ban-lock-wa-btn" href="#" onclick="openBanWhatsAppSupport(event)" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold py-4 px-6 rounded-2xl shadow-xl shadow-green-600/30 transition active:scale-95 flex items-center justify-center gap-3 text-base mb-4 no-underline">
+            <i class="fab fa-whatsapp text-2xl"></i>
+            <span>এডমিন হেল্পলাইন (WhatsApp Support)</span>
+        </a>
+
+        <!-- Logout Button -->
+        <button onclick="logoutBannedUser()" class="w-full bg-slate-800 hover:bg-slate-700 text-gray-300 font-extrabold py-3.5 px-6 rounded-2xl transition active:scale-95 flex items-center justify-center gap-2 text-sm border border-slate-700">
+            <i class="fas fa-sign-out-alt"></i> Log Out
+        </button>
     </div>
 </div>
 

@@ -938,11 +938,11 @@
                 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
                 try {
-                    db.settings({ experimentalForceLongPolling: true });
+                    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
                 } catch (e) {}
                 rtdb = firebase.database();
             }
-        } catch (e) { console.error("Firebase init failed: ", e); }
+        } catch (e) { console.log("Firebase init: ", e); }
 
         let currentServiceId = null, currentServiceName = null, currentServiceType = null;
         let currentProductId = null, currentProductName = null;
@@ -975,7 +975,14 @@
             if(sb) sb.classList.toggle('-translate-x-full');
             if(sbb) sbb.classList.toggle('hidden');
         }
-        function dbError(err) { console.error("DB Error: ", err); hideLoading(); }
+        function dbError(err) { 
+            if (err && (err.code === 'unavailable' || err.message?.includes('offline'))) {
+                console.log("Firestore offline/connecting...");
+            } else {
+                console.log("DB Notice: ", err?.message || err); 
+            }
+            hideLoading(); 
+        }
 
         function switchView(viewId, param1 = null, param2 = null, param3 = null) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
@@ -2686,6 +2693,49 @@
                 hideLoading();
                 Swal.fire({icon: 'error', title: 'সেভ করতে সমস্যা হয়েছে', text: err.message});
             });
+        }
+
+        // NATIVE ANDROID BACK BUTTON HANDLER FOR ADMIN APP
+        function handleNativeBack() {
+            const userModal = document.getElementById('user-manage-modal');
+            if (userModal && !userModal.classList.contains('hidden')) {
+                closeUserModal();
+                return 'true';
+            }
+
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (backdrop && !backdrop.classList.contains('hidden')) {
+                toggleSidebar();
+                return 'true';
+            }
+
+            if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+                Swal.close();
+                return 'true';
+            }
+
+            const activeOverlays = document.querySelectorAll('.fixed.inset-0:not(.hidden)');
+            for (let i = 0; i < activeOverlays.length; i++) {
+                const ov = activeOverlays[i];
+                if (ov.id !== 'splash-screen' && ov.id !== 'sidebar-backdrop') {
+                    ov.classList.add('hidden');
+                    if (ov.style) ov.style.display = 'none';
+                    return 'true';
+                }
+            }
+
+            const activeView = document.querySelector('.view-section:not(.hidden)');
+            if (activeView && activeView.id !== 'view-dashboard') {
+                switchView('dashboard');
+                return 'true';
+            }
+
+            if (window.AndroidApp && typeof window.AndroidApp.showExitDialog === 'function') {
+                window.AndroidApp.showExitDialog();
+            } else if (window.AndroidApp && typeof window.AndroidApp.exitApp === 'function') {
+                window.AndroidApp.exitApp();
+            }
+            return 'true';
         }
     </script>
 </body>

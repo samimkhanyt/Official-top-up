@@ -600,14 +600,14 @@
 </head>
 <body class="select-none bg-slate-50 m-0 p-0">
 <div id="global-page-loader" class="relative">
-    <div class="w-32 h-32 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden aspect-square">
+    <div class="w-32 h-32 bg-white border-2 border-slate-900 rounded-3xl shadow-2xl flex items-center justify-center p-2 overflow-hidden aspect-square">
         <img id="loader-logo-img" 
-             src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" 
+             src="logo.png" 
              alt="Logo" 
              loading="eager" 
              fetchpriority="high" 
              onerror="this.onerror=null;this.src='logo.png'"
-             class="w-full h-full object-contain rounded-xl">
+             class="w-full h-full object-cover rounded-2xl">
     </div>
 
     <div class="absolute bottom-10 flex flex-col items-center w-full px-6">
@@ -624,7 +624,7 @@
 <div id="app-content" class="relative w-full min-h-screen bg-slate-50 shadow-none flex flex-col">
     <header class="bg-white/90 backdrop-blur-md p-3 sticky top-0 z-40 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-2">
-            <img id="header-logo-img" src="logo.png" class="h-12 object-contain" alt="Header Logo">
+            <img id="header-logo-img" src="logo.png" class="h-12 w-12 object-cover rounded-xl shadow-sm border border-slate-200" alt="Header Logo">
         </div>
 
         <div id="header-user-info" class="hidden flex items-center gap-2 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-full border border-sky-200 transition cursor-pointer shadow-sm" onclick="showSec('account')">
@@ -665,8 +665,8 @@
             <div class="relative z-10 w-full max-w-xl mx-auto text-center flex flex-col justify-between items-center min-h-[70vh]">
                 <div class="flex-1 flex flex-col items-center justify-center w-full my-auto">
                     <div class="mb-8 flex items-center justify-center">
-                        <div class="w-32 h-32 sm:w-40 sm:h-40 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden">
-                            <img src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" alt="Esp TopUp Logo" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-contain rounded-xl filter drop-shadow-sm transform hover:scale-105 transition duration-300">
+                        <div class="w-32 h-32 sm:w-40 sm:h-40 bg-white border-2 border-slate-900 rounded-3xl shadow-2xl flex items-center justify-center p-2 overflow-hidden">
+                            <img src="logo.png" alt="Esp TopUp Logo" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-cover rounded-2xl filter drop-shadow-sm transform hover:scale-105 transition duration-300">
                         </div>
                     </div>
 
@@ -1522,8 +1522,8 @@
 
 <div id="verify-status-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden transition-opacity duration-300">
     <div onclick="event.stopPropagation()" class="bg-white rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center relative border border-gray-100 flex flex-col items-center justify-center animate-fade-in">
-        <div class="w-24 h-24 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden mb-4 aspect-square">
-            <img id="verify-modal-logo-img" src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-contain rounded-xl" alt="App Logo">
+        <div class="w-24 h-24 bg-white border-2 border-slate-900 rounded-3xl shadow-xl flex items-center justify-center p-2 overflow-hidden mb-4 aspect-square">
+            <img id="verify-modal-logo-img" src="logo.png" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-cover rounded-2xl" alt="App Logo">
         </div>
         <div id="verify-modal-spinner" class="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin my-2"></div>
         <div id="verify-modal-icon-box" class="hidden my-2"></div>
@@ -4423,7 +4423,7 @@ function showVerifyStatusModal(method) {
     const statusText = document.getElementById('verify-modal-status-text');
     const logoImg = document.getElementById('verify-modal-logo-img');
 
-    let modalLogo = 'https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg';
+    let modalLogo = 'logo.png';
     if (adminPaymentConfig) {
         const m = (method || '').toLowerCase();
         if (m === 'bkash' && adminPaymentConfig.bkash_modal_logo) {
@@ -4964,6 +4964,36 @@ let nativeBackClicks = 0;
 let nativeBackTimer = null;
 
 function handleNativeBack() {
+    const cropModal = document.getElementById('profile-crop-modal');
+    if (cropModal && !cropModal.classList.contains('hidden')) {
+        closeProfileCropModal();
+        return 'true';
+    }
+
+    const spinModal = document.getElementById('spin-wheel-modal');
+    if (spinModal && !spinModal.classList.contains('hidden')) {
+        closeSpinWheelModal();
+        return 'true';
+    }
+
+    const launchPopup = document.getElementById('launch-popup-modal');
+    if (launchPopup && !launchPopup.classList.contains('hidden')) {
+        closeLaunchPopup();
+        return 'true';
+    }
+
+    const verifyModal = document.getElementById('verify-status-modal');
+    if (verifyModal && !verifyModal.classList.contains('hidden')) {
+        hideVerifyStatusModal();
+        return 'true';
+    }
+
+    const userDepModal = document.getElementById('user-deposit-history-modal');
+    if (userDepModal && !userDepModal.classList.contains('hidden')) {
+        hideUserDepositHistoryModal();
+        return 'true';
+    }
+
     const referModal = document.getElementById('refer-modal');
     if (referModal && !referModal.classList.contains('hidden')) {
         closeReferralModal(true);
@@ -4989,31 +5019,13 @@ function handleNativeBack() {
         return 'true';
     }
 
-    const userDepModal = document.getElementById('user-deposit-history-modal');
-    if (userDepModal && !userDepModal.classList.contains('hidden')) {
-        hideUserDepositHistoryModal();
-        return 'true';
-    }
-
-    const verifyModal = document.getElementById('verify-status-modal');
-    if (verifyModal && !verifyModal.classList.contains('hidden')) {
-        hideVerifyStatusModal();
-        return 'true';
-    }
-
-    const launchPopup = document.getElementById('launch-popup-modal');
-    if (launchPopup && !launchPopup.classList.contains('hidden')) {
-        closeLaunchPopup();
-        return 'true';
-    }
-
     const regModal = document.getElementById('profile-reg-modal');
     if (regModal && !regModal.classList.contains('hidden')) {
         regModal.classList.add('hidden');
         return 'true';
     }
 
-    if (Swal.isVisible()) {
+    if (typeof Swal !== 'undefined' && Swal.isVisible()) {
         Swal.close();
         return 'true';
     }
@@ -5030,28 +5042,26 @@ function handleNativeBack() {
         return 'true';
     }
 
+    const genericModals = document.querySelectorAll('.fixed.inset-0:not(.hidden)');
+    for (let i = 0; i < genericModals.length; i++) {
+        const m = genericModals[i];
+        if (m.id !== 'global-page-loader' && m.id !== 'user-banned-lock-screen') {
+            m.classList.add('hidden');
+            if (m.style) m.style.display = 'none';
+            return 'true';
+        }
+    }
+
     const activeSection = document.querySelector('main section:not(.hidden)');
     if (activeSection && activeSection.id !== 'home-sec') {
         showSec('home');
         return 'true';
     }
 
-    nativeBackClicks++;
-    if (nativeBackTimer) clearTimeout(nativeBackTimer);
-
-    if (nativeBackClicks >= 3) {
-        nativeBackClicks = 0;
-        if (window.AndroidApp && typeof window.AndroidApp.showExitDialog === 'function') {
-            window.AndroidApp.showExitDialog();
-        } else {
-            showExitDialogFallback();
-        }
+    if (window.AndroidApp && typeof window.AndroidApp.showExitDialog === 'function') {
+        window.AndroidApp.showExitDialog();
     } else {
-        const remaining = 3 - nativeBackClicks;
-        showCustomToast(`Press back ${remaining} more time${remaining > 1 ? 's' : ''} to exit`);
-        nativeBackTimer = setTimeout(() => {
-            nativeBackClicks = 0;
-        }, 3000);
+        showExitDialogFallback();
     }
     return 'true';
 }

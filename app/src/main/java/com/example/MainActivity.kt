@@ -765,6 +765,10 @@ class MainActivity : ComponentActivity() {
             webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 
             webView.webViewClient = object : WebViewClient() {
+                override fun onReceivedSslError(view: WebView?, handler: android.webkit.SslErrorHandler?, error: android.net.http.SslError?) {
+                    handler?.proceed()
+                }
+
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     webView.evaluateJavascript("(function() { return localStorage.getItem('esp_logged_email') || ''; })()") { result ->

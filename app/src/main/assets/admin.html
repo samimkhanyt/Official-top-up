@@ -97,6 +97,7 @@
             <div onclick="switchView('tutorials')" id="nav-tutorials" class="nav-link"><i class="fas fa-video w-8 text-center"></i> Tutorials</div>
             <div onclick="switchView('banners')" id="nav-banners" class="nav-link"><i class="fas fa-image w-8 text-center"></i> Banners</div>
             <div onclick="switchView('popup')" id="nav-popup" class="nav-link"><i class="fas fa-bullhorn w-8 text-center"></i> Launch Popup</div>
+            <div onclick="switchView('spin-discount')" id="nav-spin-discount" class="nav-link"><i class="fas fa-dharmachakra w-8 text-center text-amber-400"></i> Spin & Discount Event</div>
             <div onclick="switchView('firebase-cfg')" id="nav-firebase-cfg" class="nav-link"><i class="fas fa-fire w-8 text-center text-orange-500"></i> Firebase Config</div>
         </nav>
         <div class="p-4 border-t border-dark-border bg-dark-bg/50">
@@ -717,6 +718,77 @@
                 </div>
             </div>
 
+            <!-- Spin & Discount Event View -->
+            <div id="view-spin-discount" class="view-section hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Left: Spin Settings & HTML Code -->
+                    <div class="card space-y-5">
+                        <h3 class="text-lg font-bold text-white mb-3 border-b border-dark-border pb-3 flex items-center gap-2">
+                            <i class="fas fa-dharmachakra text-amber-400"></i> স্পিন হুইল ও অফার ইভেন্ট কনফিগারেশন
+                        </h3>
+                        
+                        <!-- Enable/Disable Switch -->
+                        <div class="flex items-center justify-between p-4 bg-dark-bg rounded-xl border border-dark-border">
+                            <div>
+                                <div class="text-sm font-bold text-white">স্পিন হুইল ইভেন্ট চালু রাখুন</div>
+                                <div class="text-xs text-gray-400">অন থাকলে অ্যাপে ঢোকার সাথে সাথে ইউজার স্পিন করার পপআপ পাবে</div>
+                            </div>
+                            <input type="checkbox" id="set-spin-enabled" class="w-6 h-6 accent-orange-500 rounded cursor-pointer">
+                        </div>
+
+                        <!-- Single Spin Per Device Rule -->
+                        <div class="flex items-center justify-between p-4 bg-dark-bg rounded-xl border border-dark-border">
+                            <div>
+                                <div class="text-sm font-bold text-white">এক ইউজার / ডিভাইসে ১ বার স্পিন</div>
+                                <div class="text-xs text-gray-400">একবার স্পিন করা সম্পন্ন হলে ইউজারের সামনে আর আসবে না</div>
+                            </div>
+                            <input type="checkbox" id="set-spin-one-time" class="w-6 h-6 accent-orange-500 rounded cursor-pointer" checked>
+                        </div>
+
+                        <!-- Title Input -->
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1 font-semibold uppercase">স্পিন অফার টাইটেল / হেডিং:</label>
+                            <input type="text" id="set-spin-title" class="flat-input" placeholder="যেমন: 🎁 স্পিন করুন এবং সেরা ডিসকাউন্ট অফার জিতুন!">
+                        </div>
+
+                        <!-- Custom HTML / Banner Code Paste Box -->
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1 font-semibold uppercase">কাস্টম এইচটিএমএল / ব্যানার কোড (Optional HTML Code Paste):</label>
+                            <textarea id="set-spin-html" class="flat-input h-28 font-mono text-xs text-emerald-400 bg-black/60 border-slate-700 resize-none" placeholder="<div class='text-center text-amber-400 font-bold'>আজকের বিশেষ ক্যাশব্যাক ও ডিসকাউন্ট স্পিন অফার!</div>"></textarea>
+                            <p class="text-[11px] text-gray-400 mt-1">এখানে যেকোনো এইচটিএমএল বা ব্যানার টেক্সট পেস্ট করতে পারেন, যা স্পিন হুইলের পপআপে সুন্দরভাবে ভেসে উঠবে।</p>
+                        </div>
+
+                        <button onclick="saveSpinSettings()" class="flat-btn w-full py-3 text-sm font-bold flex items-center justify-center gap-2">
+                            <i class="fas fa-save"></i> সেভ স্পিন কনফিগারেশন
+                        </button>
+                    </div>
+
+                    <!-- Right: Spin Wheel Slices / Packages Config -->
+                    <div class="card space-y-4">
+                        <div class="flex items-center justify-between border-b border-dark-border pb-3">
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fas fa-pie-chart text-amber-400"></i> স্পিন হুইল প্যাকেজ স্লাইস
+                            </h3>
+                            <button onclick="addNewSpinSlice()" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-slate-900 font-bold rounded-lg text-xs flex items-center gap-1">
+                                <i class="fas fa-plus-circle"></i> স্লাইস যোগ করুন
+                            </button>
+                        </div>
+
+                        <p class="text-xs text-gray-400">
+                            স্পিন হুইলে যে প্যাকেজ বা অফারগুলো থাকবে সেগুলো এখান থেকে সেট করুন। ইউজার স্পিন করলে যেকোনো একটি অফারে এসে থামবে।
+                        </p>
+
+                        <div id="spin-slices-container" class="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+                            <!-- Dynamic slices rendered here -->
+                        </div>
+
+                        <button onclick="saveSpinSettings()" class="flat-btn w-full py-3 text-sm font-bold flex items-center justify-center gap-2 mt-2">
+                            <i class="fas fa-check-circle"></i> স্পিন স্লাইসসমূহ সেভ করুন
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Firebase Config View -->
             <div id="view-firebase-cfg" class="view-section hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -938,6 +1010,7 @@
             if(viewId === 'unpin') loadUnpinCodes();
             if(viewId === 'tutorials') loadTutorials();
             if(viewId === 'banners') loadBanners();
+            if(viewId === 'spin-discount') loadSpinDiscountSettings();
             if(viewId === 'firebase-cfg') loadFirebaseConfigToAdmin();
         }
 
@@ -2478,6 +2551,140 @@
                     localStorage.removeItem('custom_firebase_config');
                     Swal.fire({icon: 'success', title: 'Reset Successful', text: 'ডিফল্ট কনফিগারেশন রিসেট হয়েছে। রিলোড হচ্ছে...', timer: 1500, showConfirmButton: false}).then(() => { window.location.reload(); });
                 }
+            });
+        }
+
+        // SPIN WHEEL & DISCOUNT EVENT ADMIN LOGIC
+        let currentSpinSlices = [
+            { label: "100 Diamonds (20% OFF)", discount: 20, categoryId: "", color: "#F59E0B" },
+            { label: "50 Diamonds Free", discount: 100, categoryId: "", color: "#10B981" },
+            { label: "200 Diamonds (10% OFF)", discount: 10, categoryId: "", color: "#3B82F6" },
+            { label: "50% Special Discount", discount: 50, categoryId: "", color: "#EC4899" },
+            { label: "115 Diamond Pack", discount: 15, categoryId: "", color: "#8B5CF6" },
+            { label: "Bonus 25 Diamonds", discount: 25, categoryId: "", color: "#EF4444" }
+        ];
+
+        function loadSpinDiscountSettings() {
+            if(!db) return;
+            showLoading();
+            db.collection('settings').doc('spin_discount').get().then(doc => {
+                hideLoading();
+                if(doc.exists) {
+                    const data = doc.data();
+                    const en = document.getElementById('set-spin-enabled');
+                    if(en) en.checked = !!data.enabled;
+                    const single = document.getElementById('set-spin-one-time');
+                    if(single) single.checked = (data.oneTimePerDevice !== undefined) ? data.oneTimePerDevice : true;
+                    setVal('set-spin-title', data.title || "🎁 স্পিন করুন এবং সেরা ডিসকাউন্ট অফার জিতুন!");
+                    setVal('set-spin-html', data.customHtml || "");
+                    if(Array.isArray(data.slices) && data.slices.length > 0) {
+                        currentSpinSlices = data.slices;
+                    }
+                }
+                renderSpinSlices();
+            }).catch(err => {
+                console.error(err);
+                hideLoading();
+                renderSpinSlices();
+            });
+        }
+
+        function renderSpinSlices() {
+            const container = document.getElementById('spin-slices-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            let categoryOptions = '<option value="">-- No Category Link --</option>';
+            if(Array.isArray(window.allCategoriesData)) {
+                window.allCategoriesData.forEach(cat => {
+                    categoryOptions += `<option value="${cat.id}">${cat.name}</option>`;
+                });
+            }
+
+            currentSpinSlices.forEach((slice, idx) => {
+                container.innerHTML += `
+                    <div class="p-3 bg-dark-bg/80 rounded-xl border border-dark-border space-y-2 relative group hover:border-amber-500/50 transition">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-amber-400">Slice #${idx + 1}</span>
+                            <button onclick="removeSpinSlice(${idx})" class="text-red-400 hover:text-red-300 p-1 text-xs"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-0.5">অফার নেম / লেবেল:</label>
+                                <input type="text" value="${slice.label || ''}" onchange="updateSpinSlice(${idx}, 'label', this.value)" class="flat-input text-xs" placeholder="যেমন: 100 Diamonds (20% OFF)">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-0.5">ডিসকাউন্ট পার্সেন্ট (%):</label>
+                                <input type="number" value="${slice.discount !== undefined ? slice.discount : 0}" onchange="updateSpinSlice(${idx}, 'discount', parseFloat(this.value)||0)" class="flat-input text-xs" placeholder="20">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-0.5">ক্যাটাগরি পেজ লিংক:</label>
+                                <select onchange="updateSpinSlice(${idx}, 'categoryId', this.value)" class="flat-input text-xs">
+                                    ${categoryOptions.replace(`value="${slice.categoryId}"`, `value="${slice.categoryId}" selected`)}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-0.5">স্লাইস কালার (Hex):</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" value="${slice.color || '#F59E0B'}" onchange="updateSpinSlice(${idx}, 'color', this.value)" class="w-8 h-8 rounded border-none cursor-pointer bg-transparent">
+                                    <input type="text" value="${slice.color || '#F59E0B'}" onchange="updateSpinSlice(${idx}, 'color', this.value)" class="flat-input text-xs flex-1" placeholder="#F59E0B">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateSpinSlice(index, field, value) {
+            if(currentSpinSlices[index]) {
+                currentSpinSlices[index][field] = value;
+            }
+        }
+
+        function addNewSpinSlice() {
+            const colors = ['#F59E0B', '#10B981', '#3B82F6', '#EC4899', '#8B5CF6', '#EF4444', '#6366F1', '#14B8A6'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            currentSpinSlices.push({
+                label: "নতুন অফার প্যাকেজ",
+                discount: 15,
+                categoryId: "",
+                color: randomColor
+            });
+            renderSpinSlices();
+        }
+
+        function removeSpinSlice(index) {
+            if(currentSpinSlices.length <= 2) {
+                Swal.fire({toast:true, position:'top-end', icon:'warning', title:'কমপক্ষে ২টি স্লাইস থাকতে হবে!', timer:2000, showConfirmButton:false});
+                return;
+            }
+            currentSpinSlices.splice(index, 1);
+            renderSpinSlices();
+        }
+
+        function saveSpinSettings() {
+            if(!db) return;
+            showLoading();
+            const enabled = document.getElementById('set-spin-enabled') ? document.getElementById('set-spin-enabled').checked : false;
+            const oneTime = document.getElementById('set-spin-one-time') ? document.getElementById('set-spin-one-time').checked : true;
+            const title = getVal('set-spin-title') || "🎁 স্পিন করুন এবং সেরা ডিসকাউন্ট অফার জিতুন!";
+            const customHtml = getVal('set-spin-html') || "";
+
+            db.collection('settings').doc('spin_discount').set({
+                enabled: enabled,
+                oneTimePerDevice: oneTime,
+                title: title,
+                customHtml: customHtml,
+                slices: currentSpinSlices,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(() => {
+                hideLoading();
+                Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'স্পিন কনফিগারেশন সেভ হয়েছে!', timer: 2000, showConfirmButton: false});
+            }).catch(err => {
+                console.error(err);
+                hideLoading();
+                Swal.fire({icon: 'error', title: 'সেভ করতে সমস্যা হয়েছে', text: err.message});
             });
         }
     </script>

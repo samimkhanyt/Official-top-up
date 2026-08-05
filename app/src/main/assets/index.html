@@ -1928,6 +1928,22 @@ function loadGlobalSettings() {
             if (paySiteLogoSmall) paySiteLogoSmall.src = logoUrl;
             if (loaderLogoImg && logoUrl) loaderLogoImg.src = logoUrl;
 
+            if (data.headerLogoSize || data.logoSize) {
+                const sz = data.headerLogoSize || data.logoSize;
+                const szVal = isNaN(sz) ? sz : (sz + 'px');
+                if (headerLogo) {
+                    headerLogo.style.height = szVal;
+                    headerLogo.style.maxHeight = szVal;
+                }
+            }
+
+            const chooserLogo = document.getElementById('google-chooser-app-logo');
+            const chooserName = document.getElementById('google-chooser-app-name');
+            const chooserDomain = document.getElementById('google-chooser-site-domain');
+            if (chooserLogo) chooserLogo.src = logoUrl;
+            if (chooserName) chooserName.innerText = siteName;
+            if (chooserDomain) chooserDomain.innerText = siteName.toLowerCase().replace(/\s+/g, '') + '.com';
+
             document.title = siteName;
 
             const noticeEl = document.getElementById('notice-text');
@@ -2368,32 +2384,142 @@ function checkAutoLogin() {
     }
 }
 
+let rawCropImage = null;
+let cropZoomScale = 1.0;
+let cropRotationAngle = 0;
+
 function triggerPhotoSelect() {
     document.getElementById('reg-photo-input').click();
 }
 
 function handleRegPhotoSelect(event) {
-    const file = event.target.files[0];
+    const file = event.target.files && event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            customPhotoDataUrl = e.target.result;
-            const regPreview = document.getElementById('reg-avatar-preview');
-            const accPreview = document.getElementById('acc-profile-img');
-            const headerPhoto = document.getElementById('header-user-photo');
-            if (regPreview) regPreview.src = customPhotoDataUrl;
-            if (accPreview) accPreview.src = customPhotoDataUrl;
-            if (headerPhoto) headerPhoto.src = customPhotoDataUrl;
-
-            if (currentUser) {
-                db.collection('users').doc(currentUser.uid).update({
-                    photoURL: customPhotoDataUrl
-                }).then(() => {
-                    showCustomToast("ছবি আপলোড সফল হয়েছে!");
-                });
-            }
+            rawCropImage = new Image();
+            rawCropImage.onload = function() {
+                openProfileCropModal();
+            };
+            rawCropImage.src = e.target.result;
         };
         reader.readAsDataURL(file);
+    }
+}
+
+function openProfileCropModal() {
+    cropZoomScale = 1.0;
+    cropRotationAngle = 0;
+    const slider = document.getElementById('crop-zoom-slider');
+    if (slider) slider.value = 100;
+    const label = document.getElementById('crop-zoom-label');
+    if (label) label.innerText = "100%";
+
+    const modal = document.getElementById('profile-crop-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+
+    renderCropPreview();
+}
+
+function closeProfileCropModal() {
+    const modal = document.getElementById('profile-crop-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+}
+
+function updateCropCanvasZoom(val) {
+    cropZoomScale = parseFloat(val) / 100;
+    const label = document.getElementById('crop-zoom-label');
+    if (label) label.innerText = val + "%";
+    renderCropPreview();
+}
+
+function rotateCropCanvas(deg) {
+    cropRotationAngle = (cropRotationAngle + deg) % 360;
+    renderCropPreview();
+}
+
+function renderCropPreview() {
+    if (!rawCropImage) return;
+    const canvas = document.getElementById('crop-preview-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((cropRotationAngle * Math.PI) / 180);
+    ctx.scale(cropZoomScale, cropZoomScale);
+    
+    const imgW = rawCropImage.width;
+    const imgH = rawCropImage.height;
+    const scale = Math.max(canvas.width / imgW, canvas.height / imgH);
+    const drawW = imgW * scale;
+    const drawH = imgH * scale;
+    
+    ctx.drawImage(rawCropImage, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+}
+
+function confirmAndSaveCroppedPhoto() {
+    if (!rawCropImage) return;
+    
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = 300;
+    outputCanvas.height = 300;
+    const ctx = outputCanvas.getContext('2d');
+    
+    ctx.save();
+    ctx.translate(150, 150);
+    ctx.rotate((cropRotationAngle * Math.PI) / 180);
+    ctx.scale(cropZoomScale, cropZoomScale);
+    
+    const imgW = rawCropImage.width;
+    const imgH = rawCropImage.height;
+    const scale = Math.max(300 / imgW, 300 / imgH);
+    const drawW = imgW * scale;
+    const drawH = imgH * scale;
+    
+    ctx.drawImage(rawCropImage, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+    
+    customPhotoDataUrl = outputCanvas.toDataURL('image/jpeg', 0.88);
+    
+    const regPreview = document.getElementById('reg-avatar-preview');
+    const accPreview = document.getElementById('acc-profile-img');
+    const headerPhoto = document.getElementById('header-user-photo');
+    if (regPreview) regPreview.src = customPhotoDataUrl;
+    if (accPreview) accPreview.src = customPhotoDataUrl;
+    if (headerPhoto) headerPhoto.src = customPhotoDataUrl;
+
+    if (currentUser && currentUser.uid) {
+        Swal.fire({
+            title: 'ছবি সেভ করা হচ্ছে...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        db.collection('users').doc(currentUser.uid).set({
+            photoURL: customPhotoDataUrl
+        }, { merge: true }).then(() => {
+            currentUser.photoURL = customPhotoDataUrl;
+            Swal.close();
+            showCustomToast("প্রোফাইল ছবি সফলভাবে ক্রপ করে সেভ করা হয়েছে!");
+            closeProfileCropModal();
+        }).catch((err) => {
+            console.error("Save cropped photo error:", err);
+            Swal.close();
+            showCustomToast("ছবি সেভ করতে সমস্যা হয়েছে");
+        });
+    } else {
+        showCustomToast("প্রোফাইল ছবি সিলেক্ট হয়েছে!");
+        closeProfileCropModal();
     }
 }
 
@@ -2550,10 +2676,10 @@ function saveProfileName() {
         didOpen: () => { Swal.showLoading(); }
     });
 
-    db.collection('users').doc(currentUser.uid).update({
+    db.collection('users').doc(currentUser.uid).set({
         name: newName,
         photoURL: photoURL
-    }).then(() => {
+    }, { merge: true }).then(() => {
         currentUser.displayName = newName;
         currentUser.photoURL = photoURL;
         const accNameEl = document.getElementById('acc-profile-name');
@@ -5128,6 +5254,50 @@ function shareMyReferralCode() {
         copyMyReferralCode();
     }
 }
+<!-- PROFILE PHOTO CROP / RESIZE MODAL -->
+<div id="profile-crop-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[10009] hidden flex flex-col items-center justify-center p-4 animate-fade-in font-sans">
+    <div class="bg-slate-900 text-white rounded-3xl w-full max-w-sm border border-slate-700 shadow-2xl p-6 flex flex-col items-center text-center relative">
+        <button onclick="closeProfileCropModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 text-lg">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <h3 class="text-lg font-black text-white mb-1 flex items-center gap-2">
+            <i class="fas fa-crop-alt text-sky-400"></i> ছবি ক্রপ ও সাইজ করুন
+        </h3>
+        <p class="text-xs text-slate-400 mb-4">আপনার প্রোফাইল ছবির সাইজ ছোট/বড় ও পজিশন সামঞ্জস্য করুন</p>
+
+        <!-- Canvas Crop Container -->
+        <div class="relative w-64 h-64 bg-slate-950 rounded-2xl border-2 border-sky-500/50 overflow-hidden flex items-center justify-center mb-4 shadow-inner cursor-grab active:cursor-grabbing" id="crop-canvas-container">
+            <canvas id="crop-preview-canvas" width="256" height="256" class="w-full h-full object-contain"></canvas>
+            <!-- Circular Overlay Mask -->
+            <div class="absolute inset-0 border-4 border-sky-500 rounded-full pointer-events-none shadow-[0_0_0_9999px_rgba(15,23,42,0.6)]"></div>
+        </div>
+
+        <!-- Zoom Slider & Controls -->
+        <div class="w-full space-y-3 mb-6">
+            <div class="flex items-center justify-between text-xs text-slate-300 font-bold px-1">
+                <span><i class="fas fa-search-minus mr-1 text-slate-400"></i> Zoom</span>
+                <span id="crop-zoom-label" class="text-sky-400 font-mono">100%</span>
+                <span><i class="fas fa-search-plus ml-1 text-slate-400"></i></span>
+            </div>
+            <input type="range" id="crop-zoom-slider" min="50" max="250" value="100" class="w-full accent-sky-500 cursor-pointer" oninput="updateCropCanvasZoom(this.value)">
+            
+            <div class="flex items-center justify-center gap-3 pt-1">
+                <button onclick="rotateCropCanvas(-90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs text-slate-300 font-bold flex items-center gap-1">
+                    <i class="fas fa-undo"></i> বামে ঘুরান
+                </button>
+                <button onclick="rotateCropCanvas(90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs text-slate-300 font-bold flex items-center gap-1">
+                    <i class="fas fa-redo"></i> ডানে ঘুরান
+                </button>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <button onclick="confirmAndSaveCroppedPhoto()" class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-500/25 transition active:scale-95 flex items-center justify-center gap-2 text-sm">
+            <i class="fas fa-check-circle"></i> ক্রপ ও সেভ করুন
+        </button>
+    </div>
+</div>
 </script>
 </body>
 </html>

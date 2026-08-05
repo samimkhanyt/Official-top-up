@@ -246,20 +246,22 @@ class MainActivity : ComponentActivity() {
         try {
             FirebaseInitHelper.ensureInitialized(this)
 
-            try {
-                FirebaseMessaging.getInstance().subscribeToTopic("broadcast")
-                FirebaseMessaging.getInstance().subscribeToTopic("notifications_broadcast")
-                FirebaseMessaging.getInstance().subscribeToTopic("live_notifications")
-                FirebaseMessaging.getInstance().subscribeToTopic("all")
-                FirebaseMessaging.getInstance().subscribeToTopic("esp_topup")
-            } catch (e: Throwable) {
-                Log.e("MainActivity", "FirebaseMessaging subscribe error: ${e.message}")
+            val topics = listOf("broadcast", "notifications_broadcast", "live_notifications", "all", "esp_topup")
+            for (topic in topics) {
+                try {
+                    FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                        .addOnFailureListener { e ->
+                            Log.w("MainActivity", "Topic subscribe ($topic) warning: ${e.message}")
+                        }
+                } catch (e: Throwable) {
+                    Log.w("MainActivity", "FirebaseMessaging subscribe error for $topic: ${e.message}")
+                }
             }
 
             FirebaseBroadcastListener(applicationContext).startListening()
             syncFcmTokenWithFirebase()
         } catch (t: Throwable) {
-            Log.e("MainActivity", "Firebase initialization safely caught exception: ${t.message}", t)
+            Log.w("MainActivity", "Firebase initialization safely caught exception: ${t.message}")
         }
     }
 

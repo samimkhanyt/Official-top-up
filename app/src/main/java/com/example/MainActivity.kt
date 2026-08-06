@@ -246,22 +246,20 @@ class MainActivity : ComponentActivity() {
         try {
             FirebaseInitHelper.ensureInitialized(this)
 
-            val topics = listOf("broadcast", "notifications_broadcast", "live_notifications", "all", "esp_topup")
-            for (topic in topics) {
-                try {
-                    FirebaseMessaging.getInstance().subscribeToTopic(topic)
-                        .addOnFailureListener { e ->
-                            Log.w("MainActivity", "Topic subscribe ($topic) warning: ${e.message}")
-                        }
-                } catch (e: Throwable) {
-                    Log.w("MainActivity", "FirebaseMessaging subscribe error for $topic: ${e.message}")
-                }
+            try {
+                FirebaseMessaging.getInstance().subscribeToTopic("broadcast")
+                FirebaseMessaging.getInstance().subscribeToTopic("notifications_broadcast")
+                FirebaseMessaging.getInstance().subscribeToTopic("live_notifications")
+                FirebaseMessaging.getInstance().subscribeToTopic("all")
+                FirebaseMessaging.getInstance().subscribeToTopic("esp_topup")
+            } catch (e: Throwable) {
+                Log.e("MainActivity", "FirebaseMessaging subscribe error: ${e.message}")
             }
 
             FirebaseBroadcastListener(applicationContext).startListening()
             syncFcmTokenWithFirebase()
         } catch (t: Throwable) {
-            Log.w("MainActivity", "Firebase initialization safely caught exception: ${t.message}")
+            Log.e("MainActivity", "Firebase initialization safely caught exception: ${t.message}", t)
         }
     }
 
@@ -767,10 +765,6 @@ class MainActivity : ComponentActivity() {
             webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 
             webView.webViewClient = object : WebViewClient() {
-                override fun onReceivedSslError(view: WebView?, handler: android.webkit.SslErrorHandler?, error: android.net.http.SslError?) {
-                    handler?.proceed()
-                }
-
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     webView.evaluateJavascript("(function() { return localStorage.getItem('esp_logged_email') || ''; })()") { result ->

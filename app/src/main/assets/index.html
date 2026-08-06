@@ -58,6 +58,20 @@
         }
         @keyframes spin-loader { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        @keyframes rainbowFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-rainbow-link {
+            background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #10b981, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbowFlow 3s linear infinite;
+            font-weight: 800;
+        }
+
         /* --- Fade Toast Notification --- */
         #custom-toast {
             position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
@@ -600,14 +614,14 @@
 </head>
 <body class="select-none bg-slate-50 m-0 p-0">
 <div id="global-page-loader" class="relative">
-    <div class="w-32 h-32 bg-white border-2 border-slate-900 rounded-3xl shadow-2xl flex items-center justify-center p-2 overflow-hidden aspect-square">
+    <div class="w-32 h-32 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden aspect-square">
         <img id="loader-logo-img" 
-             src="logo.png" 
+             src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" 
              alt="Logo" 
              loading="eager" 
              fetchpriority="high" 
              onerror="this.onerror=null;this.src='logo.png'"
-             class="w-full h-full object-cover rounded-2xl">
+             class="w-full h-full object-contain rounded-xl">
     </div>
 
     <div class="absolute bottom-10 flex flex-col items-center w-full px-6">
@@ -622,9 +636,9 @@
 </div>
 
 <div id="app-content" class="relative w-full min-h-screen bg-slate-50 shadow-none flex flex-col">
-    <header class="bg-white/90 backdrop-blur-md p-3 sticky top-0 z-40 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-2">
-            <img id="header-logo-img" src="logo.png" class="h-12 w-12 object-cover rounded-xl shadow-sm border border-slate-200" alt="Header Logo">
+    <header class="bg-white/90 backdrop-blur-md px-3 py-2 sticky top-0 z-40 flex justify-between items-center shadow-sm transition-all duration-300">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="showSec('home')">
+            <img id="header-logo-img" src="https://i.ibb.co.com/JjcZFr8G/Background-Eraser-20260805-021434936.png" class="object-contain max-w-full transition-all" style="height: 48px; width: auto; max-height: none;" alt="Header Logo">
         </div>
 
         <div id="header-user-info" class="hidden flex items-center gap-2 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-full border border-sky-200 transition cursor-pointer shadow-sm" onclick="showSec('account')">
@@ -665,8 +679,8 @@
             <div class="relative z-10 w-full max-w-xl mx-auto text-center flex flex-col justify-between items-center min-h-[70vh]">
                 <div class="flex-1 flex flex-col items-center justify-center w-full my-auto">
                     <div class="mb-8 flex items-center justify-center">
-                        <div class="w-32 h-32 sm:w-40 sm:h-40 bg-white border-2 border-slate-900 rounded-3xl shadow-2xl flex items-center justify-center p-2 overflow-hidden">
-                            <img src="logo.png" alt="Esp TopUp Logo" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-cover rounded-2xl filter drop-shadow-sm transform hover:scale-105 transition duration-300">
+                        <div class="w-32 h-32 sm:w-40 sm:h-40 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden">
+                            <img src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" alt="Esp TopUp Logo" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-contain rounded-xl filter drop-shadow-sm transform hover:scale-105 transition duration-300">
                         </div>
                     </div>
 
@@ -707,50 +721,6 @@
                 <div id="popup-text-wrapper" class="w-full p-4 sm:p-6 flex flex-col items-start text-left space-y-2 hidden">
                     <div id="popup-title" class="text-base sm:text-lg font-extrabold text-slate-800 leading-snug whitespace-pre-line w-full hidden"></div>
                     <div id="popup-msg" class="text-sm sm:text-base text-slate-700 font-medium leading-relaxed whitespace-pre-line w-full hidden"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SPIN WHEEL & DISCOUNT OFFER MODAL -->
-        <div id="spin-wheel-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[10008] hidden flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans overflow-y-auto">
-            <div class="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl w-full max-w-sm sm:max-w-md border border-amber-500/40 shadow-[0_0_50px_rgba(245,158,11,0.25)] p-5 flex flex-col items-center text-center relative my-auto">
-                <!-- Close Button -->
-                <button onclick="closeSpinWheelModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-sm z-20 transition active:scale-90 border border-slate-700" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
-
-                <!-- Header Icon & Title -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/30 mb-2 border border-amber-300">
-                    <i class="fas fa-dharmachakra"></i>
-                </div>
-
-                <h3 id="spin-modal-title" class="text-lg sm:text-xl font-black text-amber-400 tracking-wide mb-1 leading-snug">
-                    🎁 স্পিন করুন এবং সেরা ডিসকাউন্ট জিতুন!
-                </h3>
-                <p class="text-xs text-slate-300 mb-2">হুইলটি ঘুরিয়ে আকর্ষণীয় অফার ও ক্যাশব্যাক লুটে নিন</p>
-
-                <!-- Custom Admin HTML / Banner Paste Container -->
-                <div id="spin-custom-html-container" class="w-full mb-3 text-xs text-slate-200 bg-slate-800/80 rounded-2xl p-2.5 border border-slate-700/80 hidden text-left leading-relaxed"></div>
-
-                <!-- Canvas Spin Wheel Container with Pointer -->
-                <div class="relative w-64 h-64 sm:w-72 sm:h-72 my-1 flex items-center justify-center">
-                    <!-- Top Pointer Arrow -->
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-30 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
-                        <div class="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[28px] border-t-red-600"></div>
-                    </div>
-
-                    <!-- Rotating Canvas -->
-                    <canvas id="spin-wheel-canvas" width="300" height="300" class="w-full h-full rounded-full shadow-[0_0_25px_rgba(0,0,0,0.8)] border-4 border-amber-400/80 transition-transform duration-[3500ms] cubic-bezier(0.15, 0.9, 0.2, 1)"></canvas>
-
-                    <!-- Center Spin Button Pin -->
-                    <button id="btn-spin-wheel-trigger" onclick="spinTheWheelNow()" class="absolute z-20 w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-300 text-slate-950 font-black text-xs uppercase tracking-tighter shadow-2xl shadow-amber-500/60 border-4 border-slate-900 flex flex-col items-center justify-center transition active:scale-95 hover:brightness-110">
-                        <span>SPIN</span>
-                        <span class="text-[9px] -mt-1 font-extrabold">স্পিন</span>
-                    </button>
-                </div>
-
-                <div class="text-[11px] text-amber-300 font-bold mt-2 flex items-center justify-center gap-1.5">
-                    <i class="fas fa-shield-alt text-amber-400"></i> ১টি ডিভাইসে ১ বারই স্পিন করতে পারবেন
                 </div>
             </div>
         </div>
@@ -1088,9 +1058,9 @@
                 <div id="products-grid" class="grid grid-cols-2 gap-2">
                 </div>
                 
-                <div class="mt-3 text-right">
-                   <a href="#" onclick="showSec('tutorial')" class="text-xs text-gray-600 hover:text-sky-600 no-underline">
-                       <i class="fas fa-external-link-alt"></i> কিভাবে অর্ডার করবেন ?
+                <div class="mt-3 text-left">
+                   <a href="#" onclick="showSec('tutorial')" class="animated-rainbow-link text-xs no-underline inline-flex items-center gap-1.5 font-extrabold">
+                       <i class="fas fa-external-link-alt text-sky-500"></i> কিভাবে অর্ডার করবেন ?
                    </a>
                 </div>
             </div>
@@ -1107,7 +1077,7 @@
                 </div>
                 
                 <div id="uidCheckBtn" onclick="uidCheck()" class="w-full bg-gradient-to-r from-red-700 to-orange-500 text-white text-center py-2 rounded font-bold text-sm shadow cursor-pointer relative overflow-hidden">
-                    Click to check player name
+                    আপনার গেম আইডির নাম চেক করুন
                     <div class="absolute inset-0 bg-white opacity-10 transform skew-x-12 translate-x-full animate-shine"></div>
                 </div>
             </div>
@@ -1134,9 +1104,15 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 mb-4 px-1">
-                    <i class="fas fa-info-circle text-gray-400 text-xs"></i>
-                    <p class="text-[10px] text-gray-500">আপনার একাউন্ট ব্যালেন্স <span class="text-blue-600 font-bold">৳<span id="topup-balance-display">0.00</span></span> <i class="fas fa-redo text-[10px] text-gray-400"></i></p>
+                <div class="space-y-1.5 mb-4 px-1">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-wallet text-gray-400 text-xs"></i>
+                        <p class="text-xs text-gray-600">আপনার একাউন্ট ব্যালেন্স <span class="text-blue-600 font-bold">৳<span id="topup-balance-display">0.00</span></span> <i class="fas fa-redo text-[10px] text-gray-400 cursor-pointer" onclick="fetchBalance()"></i></p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-tag text-orange-500 text-xs"></i>
+                        <p class="text-xs text-gray-700 font-bold">প্যাকেজের দাম: <span class="text-red-600 font-extrabold text-sm">৳<span id="selected-package-price-display">0</span></span></p>
+                    </div>
                 </div>
 
                 <button onclick="processOrder()" class="w-full bg-[#4a148c] text-white py-3 rounded-lg font-bold shadow-lg hover:bg-[#380e6d] transition text-sm">
@@ -1144,10 +1120,63 @@
                 </button>
             </div>
 
-            <div id="game-rules-box" class="bg-white p-3 rounded-xl shadow-sm mb-6 border border-gray-100 mx-2">
+            <div id="game-rules-box" class="bg-white p-3 rounded-xl shadow-sm mb-4 border border-gray-100 mx-2">
                  <h3 class="font-bold text-gray-800 text-sm mb-2">Rules & Conditions</h3>
                  <div id="game-rules-text" class="text-xs text-gray-700 leading-relaxed space-y-2">
                  </div>
+            </div>
+
+            <!-- Rules Footer Contact Box (Distinct 3D Elevated Card) -->
+            <div id="rules-footer-card" class="bg-gradient-to-b from-white to-gray-50 p-4.5 rounded-2xl border border-gray-200/90 mx-2 mb-8 space-y-4 relative overflow-hidden" style="box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.12), 0 6px 12px -4px rgba(0, 0, 0, 0.08), inset 0 2px 0 #ffffff, 0 4px 0 #cbd5e1;">
+                <!-- Thin Black Line at Top Start of Box -->
+                <div class="absolute top-0 left-0 right-0 h-1 bg-black z-10 w-full"></div>
+
+                <!-- Header Logo & Title -->
+                <div class="space-y-1.5 pt-2">
+                    <img id="rules-footer-logo" src="logo.png" class="h-10 object-contain mb-2" alt="App Logo" onerror="this.src='logo.png'">
+                    <h4 class="font-bold text-gray-800 text-sm">
+                        <span class="rules-site-name">Nenox Shop</span> | <span class="text-gray-600 font-normal">Trusted by Gamers, Loved by Everyone.</span>
+                    </h4>
+                    <div class="pt-1">
+                        <p class="text-xs font-bold text-gray-700">নোটিশ:</p>
+                        <p id="rules-footer-notice" class="text-xs text-gray-600 leading-relaxed">কোন সমস্যায় পড়লে Telegram এ যোগাযোগ করবেন। তাহলে দ্রুত সমাধান পেয়ে যাবেন।</p>
+                    </div>
+                </div>
+
+                <!-- YouTube & Telegram Buttons -->
+                <div class="grid grid-cols-2 gap-3 pt-1">
+                    <a id="rules-yt-btn" href="#" onclick="event.preventDefault(); if(window.adminYtLink) openExternalLink(window.adminYtLink);" class="bg-white hover:bg-gray-50 border border-gray-200 border-b-2 border-b-gray-300 py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition active:translate-y-0.5 active:shadow-none no-underline">
+                        <i class="fab fa-youtube text-red-600 text-lg"></i>
+                        <span class="text-xs font-bold text-gray-800">YouTube</span>
+                    </a>
+                    <a id="rules-tg-btn" href="#" onclick="event.preventDefault(); if(window.adminTgLink) openExternalLink(window.adminTgLink);" class="bg-white hover:bg-gray-50 border border-gray-200 border-b-2 border-b-gray-300 py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition active:translate-y-0.5 active:shadow-none no-underline">
+                        <i class="fab fa-telegram-plane text-sky-500 text-lg"></i>
+                        <span class="text-xs font-bold text-gray-800">Telegram</span>
+                    </a>
+                </div>
+
+                <!-- Contact Us Section -->
+                <div class="pt-2 space-y-2">
+                    <h4 class="font-bold text-gray-800 text-sm">Contact Us</h4>
+                    
+                    <div onclick="if(window.adminTgLink) openExternalLink(window.adminTgLink);" class="bg-white border border-gray-200 border-b-2 border-b-gray-300 p-3.5 rounded-2xl flex items-center gap-3 shadow-sm cursor-pointer hover:bg-gray-50 transition active:translate-y-0.5 active:shadow-none">
+                        <div class="w-10 h-10 rounded-full bg-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0 border-b-2 border-sky-700">
+                            <i class="fab fa-telegram-plane"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-gray-800 text-sm leading-tight">Telegram HelpLine</span>
+                                <i class="fas fa-check-circle text-sky-500 text-xs"></i>
+                            </div>
+                            <span class="text-xs text-gray-500 mt-0.5">সকাল ৮টা থেকে রাত ১২টা</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Copyright -->
+                <div class="pt-4 text-center border-t border-gray-200/80">
+                    <p class="text-[11px] text-gray-500 font-medium">All Rights Reserved | Developed By <span class="rules-site-name font-bold text-sky-700">Nenox Shop</span></p>
+                </div>
             </div>
             
             <span id="total-price" class="hidden">0</span>
@@ -1522,8 +1551,8 @@
 
 <div id="verify-status-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden transition-opacity duration-300">
     <div onclick="event.stopPropagation()" class="bg-white rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center relative border border-gray-100 flex flex-col items-center justify-center animate-fade-in">
-        <div class="w-24 h-24 bg-white border-2 border-slate-900 rounded-3xl shadow-xl flex items-center justify-center p-2 overflow-hidden mb-4 aspect-square">
-            <img id="verify-modal-logo-img" src="logo.png" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-cover rounded-2xl" alt="App Logo">
+        <div class="w-24 h-24 bg-white border-2 border-slate-900 rounded-2xl shadow-xl flex items-center justify-center p-2.5 overflow-hidden mb-4 aspect-square">
+            <img id="verify-modal-logo-img" src="https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg" onerror="this.onerror=null;this.src='logo.png'" class="w-full h-full object-contain rounded-xl" alt="App Logo">
         </div>
         <div id="verify-modal-spinner" class="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin my-2"></div>
         <div id="verify-modal-icon-box" class="hidden my-2"></div>
@@ -1680,111 +1709,72 @@
 </div>
 
 <!-- Full-Screen Referral Welcome Modal (Registration Step) -->
-<div id="google-referral-input-modal" class="fixed inset-0 w-full h-full min-h-screen bg-slate-900 z-[10007] hidden flex flex-col items-center justify-center p-6 text-center select-none overflow-y-auto animate-fade-in font-sans">
-    <div class="w-full max-w-md my-auto flex flex-col items-center py-6">
-        <!-- Icon / Logo -->
-        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 text-white flex items-center justify-center text-4xl mb-5 shadow-xl shadow-orange-500/30 animate-bounce">
+<div id="google-referral-input-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[10007] hidden flex flex-col items-center justify-center p-4 overflow-y-auto animate-fade-in">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden flex flex-col my-auto font-sans p-6 text-center relative">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 text-white flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-orange-500/30 animate-bounce">
             <i class="fas fa-handshake"></i>
         </div>
 
-        <h3 class="text-2xl font-black text-white mb-2">বন্ধুর রেফার কোড দিয়ে সাহায্য করুন!</h3>
-        <p class="text-xs text-slate-300 mb-6 leading-relaxed max-w-sm">
+        <h3 class="text-xl font-extrabold text-slate-800 mb-1">বন্ধুর রেফার কোড দিয়ে সাহায্য করুন!</h3>
+        <p class="text-xs text-slate-500 mb-5 leading-relaxed">
             আপনার বন্ধুর রেফার কোড ব্যবহার করে আপনার বন্ধুকে সাহায্য করুন ও বিশেষ বোনাস কার্যক্রমে অংশ নিন।
         </p>
 
-        <!-- Explanation Section -->
-        <div class="w-full bg-slate-800/90 border border-amber-500/30 rounded-2xl p-5 text-left mb-6 space-y-3.5 shadow-xl">
+        <!-- Explanation Card -->
+        <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 text-left mb-5 space-y-3">
             <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-extrabold flex-shrink-0 mt-0.5">
+                <div class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0 mt-0.5">
                     <i class="fas fa-gift"></i>
                 </div>
                 <div>
-                    <p class="text-xs font-extrabold text-amber-300">আপনার বন্ধুকে সাহায্য করুন!</p>
-                    <p class="text-xs text-slate-300 leading-normal">
+                    <p class="text-xs font-extrabold text-slate-800">আপনার বন্ধুকে সাহায্য করুন!</p>
+                    <p class="text-[11px] text-slate-600 leading-normal">
                         আপনার বন্ধুর রেফার কোড বসালে আপনার বন্ধু রেফারেল বোনাস সুবিধা পাবে।
                     </p>
                 </div>
             </div>
 
-            <div class="flex items-start gap-3 pt-3 border-t border-slate-700/80">
-                <div class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center text-sm font-extrabold flex-shrink-0 mt-0.5">
+            <div class="flex items-start gap-3 pt-2 border-t border-amber-200/60">
+                <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0 mt-0.5">
                     <i class="fas fa-coins"></i>
                 </div>
                 <div>
-                    <p class="text-xs font-extrabold text-amber-300">আপনার কোড শেয়ার করে আয় করুন!</p>
-                    <p class="text-xs text-slate-300 leading-normal">
-                        অ্যাকাউন্ট খোলার পর আপনিও নিজের একটি রেফার কোড পাবেন। আপনার কোড দিয়ে বন্ধু অ্যাকাউন্ট খুলে প্রথমবার অ্যাড মানি করলেই আপনার ওয়ালেটে বোনাস যোগ হবে!
+                    <p class="text-xs font-extrabold text-slate-800">আপনার কোড শেয়ার করে আয় করুন!</p>
+                    <p class="text-[11px] text-slate-600 leading-normal">
+                        অ্যাকাউন্ট খোলার পর আপনিও নিজের একটি রেফার কোড পাবেন। আপনার কোড দিয়ে বন্ধু অ্যাকাউন্ট খুলে প্রথমবার অ্যাড মানি (Add Money) করলেই আপনার ওয়ালেটে অটোমেটিক <span class="font-bold text-orange-600">১০ টাকা</span> (বা এডমিন বোনাস) যোগ হবে!
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- Referral Code Input ONLY (NO Password Input Box) -->
-        <div class="w-full mb-6 text-left">
-            <label class="block text-xs font-extrabold text-slate-200 mb-2 ml-1">বন্ধুর রেফার কোড (ঐচ্ছিক / Optional)</label>
+        <!-- Gmail Password Input -->
+        <div class="mb-4 text-left">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">আপনার জিমেইল পাসওয়ার্ড (Gmail Password)</label>
             <div class="relative">
-                <span class="absolute left-4 top-3.5 text-orange-400 font-mono font-black text-base">ESP-</span>
-                <input id="new-user-referral-code-input" type="text" placeholder="123456" class="w-full bg-slate-800 border-2 border-slate-700 focus:border-orange-500 rounded-2xl py-3.5 pl-16 pr-4 font-mono font-black text-white text-lg tracking-wider uppercase outline-none transition shadow-inner">
+                <input id="new-user-gmail-password-input" type="password" placeholder="আপনার জিমেইল পাসওয়ার্ড লিখুন" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-orange-500 rounded-2xl py-3 px-4 font-mono font-bold text-slate-800 text-sm outline-none transition">
             </div>
-            <p class="text-[11px] text-slate-400 mt-1.5 ml-1">কোড না থাকলে ফাঁকা রেখে চালিয়ে যান।</p>
+            <p class="text-[11px] text-slate-400 mt-1 ml-1">অ্যাকাউন্টের স্থায়ী নিরাপত্তার জন্য পাসওয়ার্ড প্রদান করুন।</p>
+        </div>
+
+        <!-- Referral Code Input -->
+        <div class="mb-5 text-left">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">বন্ধুর রেফার কোড (ঐচ্ছিক / Optional)</label>
+            <div class="relative">
+                <span class="absolute left-4 top-3.5 text-slate-400 font-mono font-bold text-sm">ESP-</span>
+                <input id="new-user-referral-code-input" type="text" placeholder="123456" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-orange-500 rounded-2xl py-3 pl-14 pr-4 font-mono font-bold text-slate-800 text-base uppercase outline-none transition uppercase">
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1 ml-1">কোড না থাকলে ফাঁকা রেখে চালিয়ে যান।</p>
         </div>
 
         <!-- Buttons -->
-        <div class="w-full flex flex-col gap-3">
-            <button onclick="confirmReferralCodeAndRegister(true)" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-base font-extrabold shadow-lg shadow-orange-500/20 active:scale-95 transition flex items-center justify-center gap-2">
-                <i class="fas fa-check-circle text-lg"></i> কোড বসিয়ে কনফার্ম করুন
+        <div class="flex flex-col gap-2.5">
+            <button onclick="confirmReferralCodeAndRegister(true)" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm font-extrabold shadow-lg shadow-orange-500/20 active:scale-95 transition flex items-center justify-center gap-2">
+                <i class="fas fa-check-circle"></i> কোড বসিয়ে কনফার্ম করুন
             </button>
-            <button onclick="confirmReferralCodeAndRegister(false)" class="w-full py-3.5 px-6 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-extrabold active:scale-95 transition">
+            <button onclick="confirmReferralCodeAndRegister(false)" class="w-full py-3 px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold active:scale-95 transition">
                 রেফার কোড ছাড়া অ্যাকাউন্ট খুলুন
             </button>
         </div>
-    </div>
-</div>
-
-<!-- BANNED USER LOCK SCREEN (FULL SCREEN PAGE - NO CARD BOX) -->
-<div id="user-banned-lock-screen" class="fixed inset-0 w-full h-full min-h-screen bg-slate-950 z-[999999] hidden flex flex-col justify-between items-center p-6 text-center select-none overflow-y-auto animate-fade-in font-sans">
-    <div class="flex-1 flex flex-col items-center justify-center w-full max-w-lg my-auto py-8">
-        <!-- Ban Warning Icon -->
-        <div class="w-24 h-24 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center text-red-500 text-5xl mb-6 shadow-xl shadow-red-500/20 animate-pulse">
-            <i class="fas fa-user-slash"></i>
-        </div>
-
-        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-wide mb-2">
-            অ্যাকাউন্ট সাময়িকভাবে স্থগিত
-        </h2>
-        <p class="text-xs sm:text-sm text-red-400 font-extrabold uppercase tracking-widest mb-8">
-            Account Suspended / Banned
-        </p>
-
-        <!-- Reason & Rules Text Box -->
-        <div class="w-full bg-slate-900/90 border border-red-500/30 rounded-2xl p-5 text-left mb-6 space-y-2 shadow-xl">
-            <span class="text-xs font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                <i class="fas fa-exclamation-triangle text-amber-500"></i> ব্যান করার কারণ ও রুলস
-            </span>
-            <p id="ban-lock-reason" class="text-sm text-gray-200 font-medium leading-relaxed whitespace-pre-line">
-                আপনার অ্যাকাউন্টে নীতিমালার পরিপন্থী কার্যকলাপের কারণে সাময়িকভাবে স্থগিত করা হয়েছে।
-            </p>
-        </div>
-
-        <!-- Ban Expiry / Time Status Box -->
-        <div class="w-full bg-red-950/30 border border-red-500/30 rounded-2xl p-4 mb-8 text-center shadow-lg">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">স্থগিতের সময়কাল (Ban Expiry)</span>
-            <div id="ban-lock-time" class="text-base sm:text-lg font-black text-red-400">
-                স্থায়ীভাবে ব্যান করা হয়েছে (Permanent Ban)
-            </div>
-            <div id="ban-lock-countdown" class="text-sm font-mono font-extrabold text-amber-300 mt-1.5 hidden"></div>
-        </div>
-
-        <!-- WhatsApp Admin Support Button -->
-        <a id="ban-lock-wa-btn" href="#" onclick="openBanWhatsAppSupport(event)" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold py-4 px-6 rounded-2xl shadow-xl shadow-green-600/30 transition active:scale-95 flex items-center justify-center gap-3 text-base mb-4 no-underline">
-            <i class="fab fa-whatsapp text-2xl"></i>
-            <span>এডমিন হেল্পলাইন (WhatsApp Support)</span>
-        </a>
-
-        <!-- Logout Button -->
-        <button onclick="logoutBannedUser()" class="w-full bg-slate-800 hover:bg-slate-700 text-gray-300 font-extrabold py-3.5 px-6 rounded-2xl transition active:scale-95 flex items-center justify-center gap-2 text-sm border border-slate-700">
-            <i class="fas fa-sign-out-alt"></i> Log Out
-        </button>
     </div>
 </div>
 
@@ -1815,9 +1805,9 @@ try {
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 try {
-    db.enablePersistence({ synchronizeTabs: true }).catch(()=>{});
+    db.settings({ experimentalForceLongPolling: true, merge: true });
 } catch (e) {
-    console.log("Firestore persistence error:", e);
+    console.log("Firestore settings error:", e);
 }
 const auth = firebase.auth();
 const rtdb = firebase.database();
@@ -1835,30 +1825,16 @@ let activeHistoryListener = null;
 let activeStatsListener = null;
 let activePaymentMethodListener = null;
 
-// Fast loader safety fallback: Guarantee loader hide immediately within 300ms - 500ms
-function scheduleFastLoaderHide() {
-    isSliderLoaded = true;
-    isCategoriesLoaded = true;
-    checkAndHideLoader();
-
+// Loader visibility is controlled by checkAndHideLoader() and updateNetworkStatus()
+window.addEventListener('load', () => {
     setTimeout(() => {
-        const loader = document.getElementById('global-page-loader');
-        if (loader) {
-            loader.classList.add('fade-out');
-            setTimeout(() => {
-                loader.style.display = 'none';
-                loader.classList.add('hidden');
-            }, 200);
+        if (navigator.onLine) {
+            isSliderLoaded = true;
+            isCategoriesLoaded = true;
+            checkAndHideLoader();
         }
-    }, 400);
-}
-
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    scheduleFastLoaderHide();
-} else {
-    document.addEventListener('DOMContentLoaded', scheduleFastLoaderHide);
-}
-window.addEventListener('load', scheduleFastLoaderHide);
+    }, 5000);
+});
 
 function trackImagesLoading(containerElement, callback) {
     const images = containerElement.querySelectorAll('img');
@@ -1879,7 +1855,7 @@ function trackImagesLoading(containerElement, callback) {
     }
 
     // Safety fallback timeout
-    setTimeout(finish, 300);
+    setTimeout(finish, 800);
 
     function onImgDone() {
         loadedCount++;
@@ -1978,7 +1954,16 @@ function loadGlobalSettings() {
             const paySiteLogoSmall = document.getElementById('pay-site-logo-small');
             const loaderLogoImg = document.getElementById('loader-logo-img');
 
-            if (headerLogo) headerLogo.src = logoUrl;
+            if (headerLogo) {
+                headerLogo.src = logoUrl;
+                if (data.headerLogoSize || data.logoSize) {
+                    const sz = data.headerLogoSize || data.logoSize;
+                    const szVal = isNaN(sz) ? sz : (sz + 'px');
+                    headerLogo.style.height = szVal;
+                    headerLogo.style.maxHeight = 'none';
+                    headerLogo.style.width = 'auto';
+                }
+            }
             if (aboutLogo) aboutLogo.src = logoUrl;
             if (aboutSiteName) aboutSiteName.innerText = siteName;
             if (step2Logo) step2Logo.src = logoUrl;
@@ -1986,26 +1971,26 @@ function loadGlobalSettings() {
             if (paySiteLogoSmall) paySiteLogoSmall.src = logoUrl;
             if (loaderLogoImg && logoUrl) loaderLogoImg.src = logoUrl;
 
-            if (data.headerLogoSize || data.logoSize) {
-                const sz = data.headerLogoSize || data.logoSize;
-                const szVal = isNaN(sz) ? sz : (sz + 'px');
-                if (headerLogo) {
-                    headerLogo.style.height = szVal;
-                    headerLogo.style.maxHeight = szVal;
-                }
+            const rulesLogo = document.getElementById('rules-footer-logo');
+            if (rulesLogo) rulesLogo.src = logoUrl;
+            document.querySelectorAll('.rules-site-name').forEach(el => el.innerText = siteName);
+            const rulesNotice = document.getElementById('rules-footer-notice');
+            if (rulesNotice) {
+                rulesNotice.innerText = (data.rulesNotice !== undefined && data.rulesNotice !== null && data.rulesNotice.trim() !== "") 
+                    ? data.rulesNotice 
+                    : "কোন সমস্যায় পড়লে Telegram এ যোগাযোগ করবেন। তাহলে দ্রুত সমাধান পেয়ে যাবেন।";
             }
-
-            const chooserLogo = document.getElementById('google-chooser-app-logo');
-            const chooserName = document.getElementById('google-chooser-app-name');
-            const chooserDomain = document.getElementById('google-chooser-site-domain');
-            if (chooserLogo) chooserLogo.src = logoUrl;
-            if (chooserName) chooserName.innerText = siteName;
-            if (chooserDomain) chooserDomain.innerText = siteName.toLowerCase().replace(/\s+/g, '') + '.com';
 
             document.title = siteName;
 
             const noticeEl = document.getElementById('notice-text');
-            if(noticeEl && data.notice) noticeEl.innerText = data.notice;
+            const noticeSec = document.getElementById('notice-section');
+            if (noticeEl) {
+                noticeEl.innerText = data.notice || "";
+            }
+            if (noticeSec) {
+                noticeSec.style.display = (data.notice && data.notice.trim() !== "") ? 'block' : 'none';
+            }
 
             if (isSliderLoaded && isCategoriesLoaded) {
                 showLaunchPopup(data);
@@ -2442,142 +2427,32 @@ function checkAutoLogin() {
     }
 }
 
-let rawCropImage = null;
-let cropZoomScale = 1.0;
-let cropRotationAngle = 0;
-
 function triggerPhotoSelect() {
     document.getElementById('reg-photo-input').click();
 }
 
 function handleRegPhotoSelect(event) {
-    const file = event.target.files && event.target.files[0];
+    const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            rawCropImage = new Image();
-            rawCropImage.onload = function() {
-                openProfileCropModal();
-            };
-            rawCropImage.src = e.target.result;
+            customPhotoDataUrl = e.target.result;
+            const regPreview = document.getElementById('reg-avatar-preview');
+            const accPreview = document.getElementById('acc-profile-img');
+            const headerPhoto = document.getElementById('header-user-photo');
+            if (regPreview) regPreview.src = customPhotoDataUrl;
+            if (accPreview) accPreview.src = customPhotoDataUrl;
+            if (headerPhoto) headerPhoto.src = customPhotoDataUrl;
+
+            if (currentUser) {
+                db.collection('users').doc(currentUser.uid).update({
+                    photoURL: customPhotoDataUrl
+                }).then(() => {
+                    showCustomToast("ছবি আপলোড সফল হয়েছে!");
+                });
+            }
         };
         reader.readAsDataURL(file);
-    }
-}
-
-function openProfileCropModal() {
-    cropZoomScale = 1.0;
-    cropRotationAngle = 0;
-    const slider = document.getElementById('crop-zoom-slider');
-    if (slider) slider.value = 100;
-    const label = document.getElementById('crop-zoom-label');
-    if (label) label.innerText = "100%";
-
-    const modal = document.getElementById('profile-crop-modal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-    }
-
-    renderCropPreview();
-}
-
-function closeProfileCropModal() {
-    const modal = document.getElementById('profile-crop-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
-    }
-}
-
-function updateCropCanvasZoom(val) {
-    cropZoomScale = parseFloat(val) / 100;
-    const label = document.getElementById('crop-zoom-label');
-    if (label) label.innerText = val + "%";
-    renderCropPreview();
-}
-
-function rotateCropCanvas(deg) {
-    cropRotationAngle = (cropRotationAngle + deg) % 360;
-    renderCropPreview();
-}
-
-function renderCropPreview() {
-    if (!rawCropImage) return;
-    const canvas = document.getElementById('crop-preview-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
-    
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate((cropRotationAngle * Math.PI) / 180);
-    ctx.scale(cropZoomScale, cropZoomScale);
-    
-    const imgW = rawCropImage.width;
-    const imgH = rawCropImage.height;
-    const scale = Math.max(canvas.width / imgW, canvas.height / imgH);
-    const drawW = imgW * scale;
-    const drawH = imgH * scale;
-    
-    ctx.drawImage(rawCropImage, -drawW / 2, -drawH / 2, drawW, drawH);
-    ctx.restore();
-}
-
-function confirmAndSaveCroppedPhoto() {
-    if (!rawCropImage) return;
-    
-    const outputCanvas = document.createElement('canvas');
-    outputCanvas.width = 300;
-    outputCanvas.height = 300;
-    const ctx = outputCanvas.getContext('2d');
-    
-    ctx.save();
-    ctx.translate(150, 150);
-    ctx.rotate((cropRotationAngle * Math.PI) / 180);
-    ctx.scale(cropZoomScale, cropZoomScale);
-    
-    const imgW = rawCropImage.width;
-    const imgH = rawCropImage.height;
-    const scale = Math.max(300 / imgW, 300 / imgH);
-    const drawW = imgW * scale;
-    const drawH = imgH * scale;
-    
-    ctx.drawImage(rawCropImage, -drawW / 2, -drawH / 2, drawW, drawH);
-    ctx.restore();
-    
-    customPhotoDataUrl = outputCanvas.toDataURL('image/jpeg', 0.88);
-    
-    const regPreview = document.getElementById('reg-avatar-preview');
-    const accPreview = document.getElementById('acc-profile-img');
-    const headerPhoto = document.getElementById('header-user-photo');
-    if (regPreview) regPreview.src = customPhotoDataUrl;
-    if (accPreview) accPreview.src = customPhotoDataUrl;
-    if (headerPhoto) headerPhoto.src = customPhotoDataUrl;
-
-    if (currentUser && currentUser.uid) {
-        Swal.fire({
-            title: 'ছবি সেভ করা হচ্ছে...',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-        });
-
-        db.collection('users').doc(currentUser.uid).set({
-            photoURL: customPhotoDataUrl
-        }, { merge: true }).then(() => {
-            currentUser.photoURL = customPhotoDataUrl;
-            Swal.close();
-            showCustomToast("প্রোফাইল ছবি সফলভাবে ক্রপ করে সেভ করা হয়েছে!");
-            closeProfileCropModal();
-        }).catch((err) => {
-            console.error("Save cropped photo error:", err);
-            Swal.close();
-            showCustomToast("ছবি সেভ করতে সমস্যা হয়েছে");
-        });
-    } else {
-        showCustomToast("প্রোফাইল ছবি সিলেক্ট হয়েছে!");
-        closeProfileCropModal();
     }
 }
 
@@ -2734,10 +2609,10 @@ function saveProfileName() {
         didOpen: () => { Swal.showLoading(); }
     });
 
-    db.collection('users').doc(currentUser.uid).set({
+    db.collection('users').doc(currentUser.uid).update({
         name: newName,
         photoURL: photoURL
-    }, { merge: true }).then(() => {
+    }).then(() => {
         currentUser.displayName = newName;
         currentUser.photoURL = photoURL;
         const accNameEl = document.getElementById('acc-profile-name');
@@ -3186,6 +3061,17 @@ function loadAppContent() {
     db.collection("settings").doc("general").onSnapshot((doc) => {
         if(doc.exists) {
             const data = doc.data();
+            const headerLogoImg = document.getElementById('header-logo-img');
+            if (headerLogoImg) {
+                headerLogoImg.src = (data.logoUrl && String(data.logoUrl).trim() !== '') ? data.logoUrl : "https://i.ibb.co.com/JjcZFr8G/Background-Eraser-20260805-021434936.png";
+                if (data.headerLogoSize || data.logoSize) {
+                    const sz = data.headerLogoSize || data.logoSize;
+                    const szVal = isNaN(sz) ? sz : (sz + 'px');
+                    headerLogoImg.style.height = szVal;
+                    headerLogoImg.style.maxHeight = 'none';
+                    headerLogoImg.style.width = 'auto';
+                }
+            }
             if(data.notice) {
                 const noticeEl = document.getElementById('notice-text');
                 if(noticeEl) noticeEl.innerText = data.notice;
@@ -3198,6 +3084,14 @@ function loadAppContent() {
             const appLink = data.appLink || "#";
             const fbLink = data.facebook || "#";
             const ytLink = data.youtube || "#";
+            window.adminTgLink = tgLink;
+            window.adminYtLink = ytLink;
+
+            const rulesLogo = document.getElementById('rules-footer-logo');
+            if (rulesLogo && data.logoUrl) rulesLogo.src = data.logoUrl;
+            if (data.siteName) document.querySelectorAll('.rules-site-name').forEach(el => el.innerText = data.siteName);
+            const rulesNotice = document.getElementById('rules-footer-notice');
+            if (rulesNotice && data.notice) rulesNotice.innerText = data.notice;
 
             const promoContainer = document.getElementById('promo-banner-container');
             const promoImg = document.getElementById('promo-banner-img');
@@ -3424,12 +3318,18 @@ function loadGamesAndCategories() {
 
         }, (error) => {
             console.error("Failed to load services:", error);
+            if (listContainer.innerHTML.includes("Loading Games...")) {
+                listContainer.innerHTML = `<div class="col-span-3 text-center text-red-500 py-6 font-bold">No Games Found (Check Firestore Rules)</div>`;
+            }
             isCategoriesLoaded = true;
             checkAndHideLoader();
         });
 
     }, (error) => {
         console.error("Failed to load categories:", error);
+        if (listContainer.innerHTML.includes("Loading Games...")) {
+            listContainer.innerHTML = `<div class="col-span-3 text-center text-red-500 py-6 font-bold">No Games Found (Check Firestore Rules)</div>`;
+        }
         isCategoriesLoaded = true;
         checkAndHideLoader();
     });
@@ -3497,6 +3397,8 @@ function openTopUpPage(gameId, gameName, gameImg) {
     isDirectBuy = false;
 
     document.getElementById('total-price').innerText = "0";
+    const pkgPriceEl = document.getElementById('selected-package-price-display');
+    if (pkgPriceEl) pkgPriceEl.innerText = "0";
     document.getElementById('game-player-id').value = "";
     document.getElementById('topup-game-title').innerText = gameName;
     document.getElementById('topup-sub-title').innerText = gameName + " ";
@@ -3528,9 +3430,11 @@ function openTopUpPage(gameId, gameName, gameImg) {
     }
     
     const uidCheckBtn = document.getElementById('uidCheckBtn');
-    uidCheckBtn.innerHTML = "Click to check player name";
-    uidCheckBtn.classList.remove("bg-black");
-    uidCheckBtn.classList.add("bg-gradient-to-r", "from-red-700", "to-orange-500");
+    if (uidCheckBtn) {
+        uidCheckBtn.innerHTML = "আপনার গেম আইডির নাম চেক করুন";
+        uidCheckBtn.classList.remove("bg-black", "from-green-700", "to-emerald-600");
+        uidCheckBtn.classList.add("bg-gradient-to-r", "from-red-700", "to-orange-500");
+    }
 
     showSec('topup');
     
@@ -3621,6 +3525,8 @@ function selectProduct(element, name, price, id) {
     element.classList.add('selected');
     selectedProduct = { id: id, name: name, price: parseInt(price) };
     document.getElementById('total-price').innerText = selectedProduct.price;
+    const pkgPriceEl = document.getElementById('selected-package-price-display');
+    if (pkgPriceEl) pkgPriceEl.innerText = selectedProduct.price;
 }
 
 function selectPaymentOption(option) {
@@ -3841,39 +3747,121 @@ async function processAutoTopUpOrder(playerId) {
 }
 
 function uidCheck() {
-    const uid = document.getElementById("game-player-id").value;
+    const uidInput = document.getElementById("game-player-id");
+    const uid = uidInput ? uidInput.value.trim() : "";
     const box = document.getElementById("uidCheckBtn");
 
     if (!uid) {
-        showCustomToast("আপনার ইউ আই ডি দিন");
+        showCustomToast("আপনার ইউআইডি দিন");
+        if (box) {
+            box.innerHTML = "আপনার গেম আইডির নাম চেক করুন";
+            box.classList.remove("bg-black", "from-green-700", "to-emerald-600");
+            box.classList.add("bg-gradient-to-r", "from-red-700", "to-orange-500");
+        }
         return;
     }
 
-    box.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Name is loading...';
-    box.classList.remove("bg-gradient-to-r", "from-red-700", "to-orange-500");
-    box.classList.add("bg-black");
-
-    const apiURL = `https://bhauxinfo2.vercel.app/bhau?uid=${uid}&region=BD`;
-
-    fetch(apiURL)
-        .then(res => res.json())
-        .then(data => {
-            let name = (data.basicInfo && data.basicInfo.nickname) || data.nickname || "Invalid";
-            if (name === "Invalid" || (!data.nickname && !data.basicInfo)) {
-                showCustomToast("আপনার ইউ আই ডি ভুল");
-                box.innerHTML = "Click to check player name";
-                box.classList.add("bg-gradient-to-r", "from-red-700", "to-orange-500");
-                box.classList.remove("bg-black");
-            } else {
-                box.innerHTML = name; 
-            }
-        })
-        .catch(() => {
-            showCustomToast("আপনার ইউ আই ডি ভুল");
-            box.innerHTML = "Click to check player name";
+    if (uid.length < 8 || uid.length > 10 || !/^\d+$/.test(uid)) {
+        showCustomToast("ইউ আইডিটি ভুল");
+        if (box) {
+            box.innerHTML = "আপনার গেম আইডির নাম চেক করুন";
+            box.classList.remove("bg-black", "from-green-700", "to-emerald-600");
             box.classList.add("bg-gradient-to-r", "from-red-700", "to-orange-500");
-            box.classList.remove("bg-black");
-        });
+        }
+        return;
+    }
+
+    if (box) {
+        box.innerHTML = '<i class="fas fa-spinner fa-spin"></i> নাম লোড হচ্ছে...';
+        box.classList.remove("bg-gradient-to-r", "from-red-700", "to-orange-500", "from-green-700", "to-emerald-600");
+        box.classList.add("bg-black");
+    }
+
+    const apis = [
+        `https://freefire-virtex.vercel.app/api?uid=${uid}`,
+        `https://bhauxinfo2.vercel.app/bhau?uid=${uid}&region=BD`,
+        `https://bhauxinfo2.vercel.app/bhau?uid=${uid}&region=IND`,
+        `https://bhauxinfo2.vercel.app/bhau?uid=${uid}&region=SG`,
+        `https://api.vyturex.com/ff?uid=${uid}`,
+        `https://free-fire-id-info-api.vercel.app/info?uid=${uid}`,
+        `https://ff-name-api.vercel.app/api?uid=${uid}`,
+        `https://topup-api-bd.vercel.app/api/ff?uid=${uid}`,
+        `https://garena-uid.vercel.app/api?uid=${uid}`
+    ];
+
+    let apiIndex = 0;
+
+    function fetchWithTimeout(url, timeoutMs = 4000) {
+        return Promise.race([
+            fetch(url).then(res => {
+                if (!res.ok) throw new Error("HTTP Error " + res.status);
+                return res.json();
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeoutMs))
+        ]);
+    }
+
+    function extractNickname(data) {
+        if (!data) return null;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch(e){}
+        }
+        let n = data.AccountName || 
+                data.nickname || 
+                (data.basicInfo && data.basicInfo.nickname) || 
+                (data.data && data.data.nickname) ||
+                (data.data && data.data.AccountName) ||
+                (data.result && data.result.nickname) ||
+                (data.result && data.result.AccountName) ||
+                (data.response && data.response.name) ||
+                data.name || 
+                data.PlayerName ||
+                data.player_name;
+                
+        if (n && typeof n === 'string') {
+            n = n.trim();
+            const low = n.toLowerCase();
+            if (n !== '' && low !== 'invalid' && low !== 'error' && low !== 'not found' && low !== 'null' && low !== 'undefined' && n.length >= 1) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    function tryFetchName() {
+        if (apiIndex >= apis.length) {
+            showCustomToast("ইউ আইডিটি ভুল");
+            if (box) {
+                box.innerHTML = "আপনার গেম আইডির নাম চেক করুন";
+                box.classList.remove("bg-black", "from-green-700", "to-emerald-600");
+                box.classList.add("bg-gradient-to-r", "from-red-700", "to-orange-500");
+            }
+            return;
+        }
+
+        const currentApi = apis[apiIndex];
+        apiIndex++;
+
+        fetchWithTimeout(currentApi, 4000)
+            .then(data => {
+                const name = extractNickname(data);
+                if (name) {
+                    if (box) {
+                        box.innerHTML = `<i class="fas fa-check-circle text-green-300 mr-1.5"></i> <span class="font-extrabold text-white">${name}</span>`;
+                        box.classList.remove("bg-black", "from-red-700", "to-orange-500");
+                        box.classList.add("bg-gradient-to-r", "from-green-700", "to-emerald-600");
+                    }
+                    showCustomToast(`গেম নাম: ${name}`);
+                } else {
+                    tryFetchName();
+                }
+            })
+            .catch(() => {
+                tryFetchName();
+            });
+    }
+
+    tryFetchName();
 }
 
 function showSec(secId) {
@@ -4421,7 +4409,7 @@ function showVerifyStatusModal(method) {
     const statusText = document.getElementById('verify-modal-status-text');
     const logoImg = document.getElementById('verify-modal-logo-img');
 
-    let modalLogo = 'logo.png';
+    let modalLogo = 'https://i.ibb.co.com/m5Wqb5QV/1000022763.jpg';
     if (adminPaymentConfig) {
         const m = (method || '').toLowerCase();
         if (m === 'bkash' && adminPaymentConfig.bkash_modal_logo) {
@@ -4895,14 +4883,30 @@ function updateNetworkStatus(online) {
     const statusBox = document.getElementById('net-status-box');
     const statusText = document.getElementById('net-status-text');
     const statusIcon = document.getElementById('net-status-icon');
+    const loader = document.getElementById('global-page-loader');
 
     if (!statusBox) return;
 
     if (!isOnline) {
+        if (loader) {
+            loader.classList.remove('hidden', 'fade-out');
+            loader.style.display = 'flex';
+            loader.style.opacity = '1';
+        }
         statusBox.classList.remove('hidden', 'online');
         statusBox.classList.add('offline');
-        if (statusIcon) statusIcon.innerHTML = `<i class="fas fa-wifi-slash"></i>`;
-        if (statusText) statusText.innerText = "Internet Connection Lost";
+        statusIcon.innerHTML = `<i class="fas fa-wifi-slash"></i>`;
+        statusText.innerText = "Internet Connect";
+
+        if (!offlineExitTimer) {
+            offlineExitTimer = setTimeout(() => {
+                if (!navigator.onLine) {
+                    if (window.Android && typeof window.Android.exitApp === 'function') {
+                        window.Android.exitApp();
+                    }
+                }
+            }, 4000);
+        }
     } else {
         if (offlineExitTimer) {
             clearTimeout(offlineExitTimer);
@@ -4910,20 +4914,30 @@ function updateNetworkStatus(online) {
         }
         statusBox.classList.remove('hidden', 'offline');
         statusBox.classList.add('online');
-        if (statusIcon) statusIcon.innerHTML = `<i class="fas fa-check-circle"></i>`;
-        if (statusText) statusText.innerText = "Internet Connected";
+        statusIcon.innerHTML = `<i class="fas fa-check-circle"></i>`;
+        statusText.innerText = "Internet Success";
 
         setTimeout(() => {
-            if (statusBox) statusBox.classList.add('hidden');
             checkAndHideLoader();
-        }, 1500);
+        }, 1200);
     }
 }
 
 window.addEventListener('online', () => updateNetworkStatus(true));
 window.addEventListener('offline', () => updateNetworkStatus(false));
 
+document.addEventListener("DOMContentLoaded", () => {
+    if (!navigator.onLine) {
+        updateNetworkStatus(false);
+    }
+});
+
 function checkAndHideLoader() {
+    if (!navigator.onLine) {
+        updateNetworkStatus(false);
+        return;
+    }
+
     if (isSliderLoaded && isCategoriesLoaded) {
         const loader = document.getElementById('global-page-loader');
         if (loader && !loader.classList.contains('fade-out')) {
@@ -4931,7 +4945,7 @@ function checkAndHideLoader() {
             setTimeout(() => { 
                 loader.style.display = 'none'; 
                 loader.classList.add('hidden');
-            }, 300);
+            }, 400);
         }
         if (window.pendingPopupData) {
             showLaunchPopup(window.pendingPopupData);
@@ -4962,36 +4976,6 @@ let nativeBackClicks = 0;
 let nativeBackTimer = null;
 
 function handleNativeBack() {
-    const cropModal = document.getElementById('profile-crop-modal');
-    if (cropModal && !cropModal.classList.contains('hidden')) {
-        closeProfileCropModal();
-        return 'true';
-    }
-
-    const spinModal = document.getElementById('spin-wheel-modal');
-    if (spinModal && !spinModal.classList.contains('hidden')) {
-        closeSpinWheelModal();
-        return 'true';
-    }
-
-    const launchPopup = document.getElementById('launch-popup-modal');
-    if (launchPopup && !launchPopup.classList.contains('hidden')) {
-        closeLaunchPopup();
-        return 'true';
-    }
-
-    const verifyModal = document.getElementById('verify-status-modal');
-    if (verifyModal && !verifyModal.classList.contains('hidden')) {
-        hideVerifyStatusModal();
-        return 'true';
-    }
-
-    const userDepModal = document.getElementById('user-deposit-history-modal');
-    if (userDepModal && !userDepModal.classList.contains('hidden')) {
-        hideUserDepositHistoryModal();
-        return 'true';
-    }
-
     const referModal = document.getElementById('refer-modal');
     if (referModal && !referModal.classList.contains('hidden')) {
         closeReferralModal(true);
@@ -5017,13 +5001,31 @@ function handleNativeBack() {
         return 'true';
     }
 
+    const userDepModal = document.getElementById('user-deposit-history-modal');
+    if (userDepModal && !userDepModal.classList.contains('hidden')) {
+        hideUserDepositHistoryModal();
+        return 'true';
+    }
+
+    const verifyModal = document.getElementById('verify-status-modal');
+    if (verifyModal && !verifyModal.classList.contains('hidden')) {
+        hideVerifyStatusModal();
+        return 'true';
+    }
+
+    const launchPopup = document.getElementById('launch-popup-modal');
+    if (launchPopup && !launchPopup.classList.contains('hidden')) {
+        closeLaunchPopup();
+        return 'true';
+    }
+
     const regModal = document.getElementById('profile-reg-modal');
     if (regModal && !regModal.classList.contains('hidden')) {
         regModal.classList.add('hidden');
         return 'true';
     }
 
-    if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+    if (Swal.isVisible()) {
         Swal.close();
         return 'true';
     }
@@ -5040,26 +5042,28 @@ function handleNativeBack() {
         return 'true';
     }
 
-    const genericModals = document.querySelectorAll('.fixed.inset-0:not(.hidden)');
-    for (let i = 0; i < genericModals.length; i++) {
-        const m = genericModals[i];
-        if (m.id !== 'global-page-loader' && m.id !== 'user-banned-lock-screen') {
-            m.classList.add('hidden');
-            if (m.style) m.style.display = 'none';
-            return 'true';
-        }
-    }
-
     const activeSection = document.querySelector('main section:not(.hidden)');
     if (activeSection && activeSection.id !== 'home-sec') {
         showSec('home');
         return 'true';
     }
 
-    if (window.AndroidApp && typeof window.AndroidApp.showExitDialog === 'function') {
-        window.AndroidApp.showExitDialog();
+    nativeBackClicks++;
+    if (nativeBackTimer) clearTimeout(nativeBackTimer);
+
+    if (nativeBackClicks >= 3) {
+        nativeBackClicks = 0;
+        if (window.AndroidApp && typeof window.AndroidApp.showExitDialog === 'function') {
+            window.AndroidApp.showExitDialog();
+        } else {
+            showExitDialogFallback();
+        }
     } else {
-        showExitDialogFallback();
+        const remaining = 3 - nativeBackClicks;
+        showCustomToast(`Press back ${remaining} more time${remaining > 1 ? 's' : ''} to exit`);
+        nativeBackTimer = setTimeout(() => {
+            nativeBackClicks = 0;
+        }, 3000);
     }
     return 'true';
 }
@@ -5296,218 +5300,12 @@ function shareMyReferralCode() {
         copyMyReferralCode();
     }
 }
-<!-- PROFILE PHOTO CROP / RESIZE MODAL -->
-<div id="profile-crop-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[10009] hidden flex flex-col items-center justify-center p-4 animate-fade-in font-sans">
-    <div class="bg-slate-900 text-white rounded-3xl w-full max-w-sm border border-slate-700 shadow-2xl p-6 flex flex-col items-center text-center relative">
-        <button onclick="closeProfileCropModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 text-lg">
-            <i class="fas fa-times"></i>
-        </button>
-
-        <h3 class="text-lg font-black text-white mb-1 flex items-center gap-2">
-            <i class="fas fa-crop-alt text-sky-400"></i> ছবি ক্রপ ও সাইজ করুন
-        </h3>
-        <p class="text-xs text-slate-400 mb-4">আপনার প্রোফাইল ছবির সাইজ ছোট/বড় ও পজিশন সামঞ্জস্য করুন</p>
-
-        <!-- Canvas Crop Container -->
-        <div class="relative w-64 h-64 bg-slate-950 rounded-2xl border-2 border-sky-500/50 overflow-hidden flex items-center justify-center mb-4 shadow-inner cursor-grab active:cursor-grabbing" id="crop-canvas-container">
-            <canvas id="crop-preview-canvas" width="256" height="256" class="w-full h-full object-contain"></canvas>
-            <!-- Circular Overlay Mask -->
-            <div class="absolute inset-0 border-4 border-sky-500 rounded-full pointer-events-none shadow-[0_0_0_9999px_rgba(15,23,42,0.6)]"></div>
-        </div>
-
-        <!-- Zoom Slider & Controls -->
-        <div class="w-full space-y-3 mb-6">
-            <div class="flex items-center justify-between text-xs text-slate-300 font-bold px-1">
-                <span><i class="fas fa-search-minus mr-1 text-slate-400"></i> Zoom</span>
-                <span id="crop-zoom-label" class="text-sky-400 font-mono">100%</span>
-                <span><i class="fas fa-search-plus ml-1 text-slate-400"></i></span>
-            </div>
-            <input type="range" id="crop-zoom-slider" min="50" max="250" value="100" class="w-full accent-sky-500 cursor-pointer" oninput="updateCropCanvasZoom(this.value)">
-            
-            <div class="flex items-center justify-center gap-3 pt-1">
-                <button onclick="rotateCropCanvas(-90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs text-slate-300 font-bold flex items-center gap-1">
-                    <i class="fas fa-undo"></i> বামে ঘুরান
-                </button>
-                <button onclick="rotateCropCanvas(90)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs text-slate-300 font-bold flex items-center gap-1">
-                    <i class="fas fa-redo"></i> ডানে ঘুরান
-                </button>
-            </div>
-        </div>
-
-        <!-- Save Button -->
-        <button onclick="confirmAndSaveCroppedPhoto()" class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-extrabold rounded-2xl shadow-lg shadow-sky-500/25 transition active:scale-95 flex items-center justify-center gap-2 text-sm">
-            <i class="fas fa-check-circle"></i> ক্রপ ও সেভ করুন
-        </button>
-    </div>
-</div>
-
-<script>
-let userSpinConfig = null;
-let isSpinningWheel = false;
-let currentWheelRotation = 0;
-
-function initAndCheckSpinModal() {
-    if (!db) return;
-    const deviceSpinDone = localStorage.getItem('esp_spin_done_v2');
-    const modalDismissed = sessionStorage.getItem('esp_spin_modal_dismissed');
-    
-    if (modalDismissed === 'true') return;
-
-    db.collection('settings').doc('spin_discount').get().then(doc => {
-        if (!doc.exists) return;
-        const data = doc.data();
-        if (!data.enabled) return;
-        userSpinConfig = data;
-
-        if (data.oneTimePerDevice && deviceSpinDone === 'true') {
-            return;
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || (e.ctrlKey && e.keyCode === 85)) {
+            e.preventDefault();
         }
-
-        setTimeout(() => {
-            setupSpinWheelCanvas(data.slices || []);
-            showSpinWheelModal(data);
-        }, 1000);
-    }).catch(e => console.log("Spin load err:", e));
-}
-
-function showSpinWheelModal(data) {
-    const modal = document.getElementById('spin-wheel-modal');
-    const titleEl = document.getElementById('spin-modal-title');
-    const htmlBox = document.getElementById('spin-custom-html-container');
-    if (!modal) return;
-
-    if (titleEl && data.title) titleEl.innerText = data.title;
-    if (htmlBox) {
-        if (data.customHtml && data.customHtml.trim() !== '') {
-            htmlBox.innerHTML = data.customHtml;
-            htmlBox.classList.remove('hidden');
-        } else {
-            htmlBox.classList.add('hidden');
-        }
-    }
-    modal.classList.remove('hidden');
-}
-
-function closeSpinWheelModal() {
-    const modal = document.getElementById('spin-wheel-modal');
-    if (modal) modal.classList.add('hidden');
-    sessionStorage.setItem('esp_spin_modal_dismissed', 'true');
-}
-
-function setupSpinWheelCanvas(slices) {
-    const canvas = document.getElementById('spin-wheel-canvas');
-    if (!canvas || !slices || slices.length === 0) return;
-    const ctx = canvas.getContext('2d');
-    const numSlices = slices.length;
-    const arc = (2 * Math.PI) / numSlices;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = canvas.width / 2 - 8;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < numSlices; i++) {
-        const slice = slices[i];
-        const angle = i * arc;
-        ctx.beginPath();
-        ctx.fillStyle = slice.color || '#F59E0B';
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, angle, angle + arc);
-        ctx.lineTo(centerX, centerY);
-        ctx.fill();
-
-        ctx.strokeStyle = '#0F172A';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(angle + arc / 2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "bold 11px sans-serif";
-        ctx.shadowColor = "rgba(0,0,0,0.8)";
-        ctx.shadowBlur = 4;
-        
-        let text = slice.label || `Slice ${i+1}`;
-        if (text.length > 18) text = text.substring(0, 16) + '..';
-        ctx.fillText(text, radius - 12, 4);
-        ctx.restore();
-    }
-}
-
-function spinTheWheelNow() {
-    if (isSpinningWheel || !userSpinConfig || !userSpinConfig.slices || userSpinConfig.slices.length === 0) return;
-    isSpinningWheel = true;
-
-    const canvas = document.getElementById('spin-wheel-canvas');
-    const btn = document.getElementById('btn-spin-wheel-trigger');
-    if (btn) btn.disabled = true;
-
-    const slices = userSpinConfig.slices;
-    const numSlices = slices.length;
-    
-    const winningIndex = Math.floor(Math.random() * numSlices);
-    const winningSlice = slices[winningIndex];
-
-    const arcDeg = 360 / numSlices;
-    const sliceCenterDeg = (winningIndex * arcDeg) + (arcDeg / 2);
-    const targetDeg = (360 - sliceCenterDeg + 270) % 360;
-    
-    const fullRotations = (5 + Math.floor(Math.random() * 3)) * 360;
-    const finalTotalRotation = currentWheelRotation + fullRotations + targetDeg;
-    currentWheelRotation = finalTotalRotation;
-
-    if (canvas) {
-        canvas.style.transform = `rotate(${finalTotalRotation}deg)`;
-    }
-
-    localStorage.setItem('esp_spin_done_v2', 'true');
-    if (window.currentUser) {
-        db.collection('users').doc(window.currentUser.uid).set({
-            spinClaimed: true,
-            wonSliceLabel: winningSlice.label || '',
-            wonDiscount: winningSlice.discount || 0
-        }, { merge: true }).catch(()=>{});
-    }
-
-    setTimeout(() => {
-        isSpinningWheel = false;
-        closeSpinWheelModal();
-        
-        const discountText = winningSlice.discount ? `${winningSlice.discount}% OFF` : 'বিশেষ অফার';
-        Swal.fire({
-            title: '🎉 অভিনন্দন!',
-            html: `
-                <div class="text-center p-2">
-                    <div class="text-3xl mb-2">🎁</div>
-                    <div class="text-lg font-black text-amber-500 mb-1">${winningSlice.label}</div>
-                    <p class="text-xs text-slate-300">আপনি পেয়েছেন: <span class="text-emerald-400 font-bold">${discountText}</span>!</p>
-                </div>
-            `,
-            icon: 'success',
-            confirmButtonText: '<i class="fas fa-shopping-bag mr-1"></i> ডিসকাউন্ট নিয়ে অর্ডার করুন',
-            confirmButtonColor: '#F59E0B',
-            background: '#0F172A',
-            color: '#FFFFFF',
-            customClass: {
-                popup: 'rounded-3xl border border-amber-500/40 shadow-2xl'
-            }
-        }).then(() => {
-            if (winningSlice.categoryId && typeof openCategoryPage === 'function') {
-                openCategoryPage(winningSlice.categoryId);
-            }
-        });
-    }, 3600);
-}
-
-// Auto init spin check on document load
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(initAndCheckSpinModal, 1200);
-} else {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(initAndCheckSpinModal, 1200));
-}
-</script>
+    });
 </script>
 </body>
 </html>

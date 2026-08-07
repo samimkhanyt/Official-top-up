@@ -86,6 +86,8 @@
         </div>
         <nav class="flex-1 overflow-y-auto py-4 scroll-smooth">
             <div onclick="switchView('dashboard')" id="nav-dashboard" class="nav-link active"><i class="fas fa-chart-pie w-8 text-center"></i> Dashboard</div>
+            <div onclick="switchView('app-logos')" id="nav-app-logos" class="nav-link"><i class="fas fa-images w-8 text-center text-orange-400"></i> App Logo & Images</div>
+            <div onclick="switchView('app-texts')" id="nav-app-texts" class="nav-link"><i class="fas fa-edit w-8 text-center text-orange-400"></i> App Text & Buttons</div>
             <div onclick="switchView('settings')" id="nav-settings" class="nav-link"><i class="fas fa-cog w-8 text-center"></i> Settings</div>
             <div onclick="switchView('categories')" id="nav-categories" class="nav-link"><i class="fas fa-tags w-8 text-center"></i> Categories</div>
             <div onclick="switchView('services')" id="nav-services" class="nav-link"><i class="fas fa-gamepad w-8 text-center"></i> Services & Games</div>
@@ -151,6 +153,14 @@
                         <i class="fas fa-th-large text-orange-500"></i> Esp Admin Control Panel
                     </h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <div onclick="switchView('app-logos')" class="p-5 bg-dark-panel border border-orange-500/50 rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group shadow-md shadow-orange-500/10">
+                            <div class="w-12 h-12 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center mb-3 group-hover:bg-orange-500/20 transition-all"><i class="fas fa-images text-xl text-orange-400"></i></div>
+                            <span class="text-sm font-bold text-white group-hover:text-orange-400">App Images</span>
+                        </div>
+                        <div onclick="switchView('app-texts')" class="p-5 bg-dark-panel border border-orange-500/50 rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group shadow-md shadow-orange-500/10">
+                            <div class="w-12 h-12 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center mb-3 group-hover:bg-orange-500/20 transition-all"><i class="fas fa-edit text-xl text-orange-400"></i></div>
+                            <span class="text-sm font-bold text-white group-hover:text-orange-400">App Text & Btns</span>
+                        </div>
                         <div onclick="switchView('settings')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
                             <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-cog text-xl text-gray-400 group-hover:text-orange-500"></i></div>
                             <span class="text-sm font-medium text-gray-300 group-hover:text-white">Settings</span>
@@ -186,6 +196,310 @@
                         <div onclick="switchView('popup')" class="p-5 bg-dark-panel border border-dark-border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition transform active:scale-95 hover:border-orange-500 hover:bg-dark-bg group">
                             <div class="w-12 h-12 rounded-full bg-dark-bg border border-dark-border flex items-center justify-center mb-3 group-hover:bg-orange-500/10 transition-all"><i class="fas fa-bullhorn text-xl text-gray-400 group-hover:text-orange-500"></i></div>
                             <span class="text-sm font-medium text-gray-300 group-hover:text-white">App Popup</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- App Logo & Images View -->
+            <div id="view-app-logos" class="view-section hidden">
+                <div class="card mb-6">
+                    <h3 class="text-xl font-extrabold text-white mb-2 flex items-center gap-2">
+                        <i class="fas fa-images text-orange-500"></i> অ্যাপ লোগো ও ছবি সেটিংস (App Logo & Image Settings)
+                    </h3>
+                    <p class="text-xs text-gray-400">এখানে আপনার অ্যাপের বিভিন্ন জায়গার লোগো ও ছবি পরিবর্তন করতে পারবেন। প্রতিটি ইনপুট বক্সের নিচে আলাদা 'সেভ করুন' বাটন রয়েছে।</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 1. Header Logo -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">১. অ্যাপের মূল হেডার লোগো (Header Logo)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার অ্যাপের একদম উপরে হেডার বা নেভিগেশন বারে যে মূল লোগোটি থাকে।
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="set-img-header-logo" class="flat-input flex-1" placeholder="https://...">
+                                <label class="cursor-pointer bg-dark-bg hover:bg-orange-500/20 text-orange-400 border border-dark-border hover:border-orange-500 px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-image"></i> Gallery
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadImageFromGallery(this, 'set-img-header-logo')">
+                                </label>
+                            </div>
+                            <button onclick="saveIndividualSetting('logoUrl', 'set-img-header-logo')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Header Logo)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Loading Screen Logo -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">২. অ্যাপ লোডিং এনিমেশন লোগো (Loading Screen Logo)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার অ্যাপে ঢোকার সময় যে ফুলস্ক্রিন সাদা লোডিং বা স্প্ল্যাশ স্ক্রিন আসে, তার মাঝখানের ঘুরন্ত লোগো।
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="set-img-loader-logo" class="flat-input flex-1" placeholder="https://...">
+                                <label class="cursor-pointer bg-dark-bg hover:bg-orange-500/20 text-orange-400 border border-dark-border hover:border-orange-500 px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-image"></i> Gallery
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadImageFromGallery(this, 'set-img-loader-logo')">
+                                </label>
+                            </div>
+                            <button onclick="saveIndividualSetting('loaderLogoUrl', 'set-img-loader-logo')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Loading Logo)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Login Page Logo -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৩. লগইন পেজ লোগো (Login Page Logo)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার যখন অ্যাপে লগইন বা সাইনইন ডায়ালগে থাকে, তখন উপরে যে লোগোটি দেখায়।
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="set-img-login-logo" class="flat-input flex-1" placeholder="https://...">
+                                <label class="cursor-pointer bg-dark-bg hover:bg-orange-500/20 text-orange-400 border border-dark-border hover:border-orange-500 px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-image"></i> Gallery
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadImageFromGallery(this, 'set-img-login-logo')">
+                                </label>
+                            </div>
+                            <button onclick="saveIndividualSetting('loginLogoUrl', 'set-img-login-logo')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Login Logo)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Toast Popup Logo -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৪. টোস্ট ও নোটিফিকেশন পপ-আপ লোগো (Toast Dialog Logo)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> প্যাকেজ বা ইউআইডি না দিলে নিচে যে নোটিফিকেশন মেসেজ ভেসে ওঠে, তার সাথে যে লোগোটি আসে।
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="set-img-toast-logo" class="flat-input flex-1" placeholder="https://...">
+                                <label class="cursor-pointer bg-dark-bg hover:bg-orange-500/20 text-orange-400 border border-dark-border hover:border-orange-500 px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-image"></i> Gallery
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadImageFromGallery(this, 'set-img-toast-logo')">
+                                </label>
+                            </div>
+                            <button onclick="saveIndividualSetting('toastLogoUrl', 'set-img-toast-logo')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Toast Logo)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 5. Push Notification Logo -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৫. পুশ নোটিফিকেশন লোগো (Push Notification Logo)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> এডমিন থেকে ইউজারদের ফোনে পুশ নোটিফিকেশন পাঠালে নোটিফিকেশনের সাথে যে লোগোটি দেখায়।
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="set-img-notif-logo" class="flat-input flex-1" placeholder="https://...">
+                                <label class="cursor-pointer bg-dark-bg hover:bg-orange-500/20 text-orange-400 border border-dark-border hover:border-orange-500 px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-image"></i> Gallery
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadImageFromGallery(this, 'set-img-notif-logo')">
+                                </label>
+                            </div>
+                            <button onclick="saveIndividualSetting('notificationLogoUrl', 'set-img-notif-logo')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Notification Logo)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 6. bKash Modal Logo -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-pink-400 uppercase mb-2">৬. বিকাশ মোডাল ও পেমেন্ট লোগো (bKash Payment Logo)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-pink-400 mr-1"></i> অ্যাড মানি পেজে বিকাশ পেমেন্ট মোডাল বা অটো পেমেন্টে যে বিকাশ লোগো দেখায়।
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="set-img-bkash-logo" class="flat-input flex-1" placeholder="https://...">
+                                <label class="cursor-pointer bg-dark-bg hover:bg-orange-500/20 text-orange-400 border border-dark-border hover:border-orange-500 px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-image"></i> Gallery
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadImageFromGallery(this, 'set-img-bkash-logo')">
+                                </label>
+                            </div>
+                            <button onclick="saveIndividualPaymentSetting('bkash_modal_logo', 'set-img-bkash-logo')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save bKash Logo)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 7. Nagad Modal Logo -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৭. নগদ মোডাল ও পেমেন্ট লোগো (Nagad Payment Logo)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> অ্যাড মানি পেজে নগদ পেমেন্ট মোডাল বা অটো পেমেন্টে যে নগদ লোগো দেখায়।
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="set-img-nagad-logo" class="flat-input flex-1" placeholder="https://...">
+                                <label class="cursor-pointer bg-dark-bg hover:bg-orange-500/20 text-orange-400 border border-dark-border hover:border-orange-500 px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-image"></i> Gallery
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadImageFromGallery(this, 'set-img-nagad-logo')">
+                                </label>
+                            </div>
+                            <button onclick="saveIndividualPaymentSetting('nagad_modal_logo', 'set-img-nagad-logo')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Nagad Logo)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- App Text & Button Customization View -->
+            <div id="view-app-texts" class="view-section hidden">
+                <div class="card mb-6">
+                    <h3 class="text-xl font-extrabold text-white mb-2 flex items-center gap-2">
+                        <i class="fas fa-edit text-orange-500"></i> অ্যাপ টেক্সট ও বাটন সেটিংস (App Text & Button Settings)
+                    </h3>
+                    <p class="text-xs text-gray-400">এখানে ইউজার অ্যাপের বিভিন্ন লেখার বিষয়বস্তু, বাটন টেক্সট ও নোটিশ পরিবর্তন করতে পারবেন। প্রতিটি ইনপুট বক্সের নিচে সেভ বাটন দেওয়া আছে।</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 1. Player ID Placeholder -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">১. প্লেয়ার আইডি ইনপুট বক্সের প্লেসহোল্ডার</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> টপআপ পেজে Player ID লিখার বক্সে হালকা রঙের যে টেক্সট লেখা থাকে (যেমন: Enter Player ID)।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-playerid-placeholder" class="flat-input" placeholder="Enter Player ID">
+                            <button onclick="saveIndividualSetting('playerIdPlaceholder', 'set-txt-playerid-placeholder')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Player ID Placeholder)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. UID Check Button Text -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">২. 'আইডির নাম চেক করুন' বাটন টেক্সট</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> টপআপ পেজে প্লেয়ার আইডির নাম অটো চেক করার বাটনের টেক্সট।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-checkuid-btn" class="flat-input" placeholder="আপনার গেম আইডির নাম চেক করুন">
+                            <button onclick="saveIndividualSetting('checkUidBtnText', 'set-txt-checkuid-btn')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Check UID Button Text)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Buy Now Button Text -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৩. 'এখনই কিনুন' (Buy Now) বাটন টেক্সট</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> টপআপ পেজে প্যাকেজ কেনার মূল বাটনের টেক্সট (যেমন: Buy Now / এখনই অর্ডার করুন)।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-buynow-btn" class="flat-input" placeholder="Buy Now">
+                            <button onclick="saveIndividualSetting('buyNowBtnText', 'set-txt-buynow-btn')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Buy Now Button Text)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Nav Home Label -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৪. বটম নেভিগেশন ১ - হোম বাটন টেক্সট</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার অ্যাপের একদম নিচে প্রথম বাটনটির নাম (যেমন: Home / হোম)।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-nav-home" class="flat-input" placeholder="Home">
+                            <button onclick="saveIndividualSetting('navHomeText', 'set-txt-nav-home')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Home Button Text)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 5. Nav Tutorial Label -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৫. বটম নেভিগেশন ২ - টিউটোরিয়াল বাটন টেক্সট</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার অ্যাপের একদম নিচে দ্বিতীয় বাটনটির নাম (যেমন: Tutorial / ভিডিও)।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-nav-tutorial" class="flat-input" placeholder="Tutorial">
+                            <button onclick="saveIndividualSetting('navTutorialText', 'set-txt-nav-tutorial')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Tutorial Button Text)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 6. Nav Add Money Label -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৬. বটম নেভিগেশন ৩ - অ্যাড মানি বাটন টেক্সট</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার অ্যাপের একদম নিচে তৃতীয় বাটনটির নাম (যেমন: Add Money / ওয়ালেট)।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-nav-addmoney" class="flat-input" placeholder="Add Money">
+                            <button onclick="saveIndividualSetting('navAddMoneyText', 'set-txt-nav-addmoney')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Add Money Button Text)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 7. Nav History Label -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৭. বটম নেভিগেশন ৪ - হিস্ট্রি / মাই অর্ডার টেক্সট</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার অ্যাপের একদম নিচে চতুর্থ বাটনটির নাম (যেমন: History / মাই অর্ডার)।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-nav-orders" class="flat-input" placeholder="History">
+                            <button onclick="saveIndividualSetting('navOrdersText', 'set-txt-nav-orders')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Orders Button Text)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 8. Nav Account Label -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৮. বটম নেভিগেশন ৫ - একাউন্ট বাটন টেক্সট</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার অ্যাপের একদম নিচে পঞ্চম বাটনটির নাম (যেমন: Account / একাউন্ট)।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-nav-account" class="flat-input" placeholder="Account">
+                            <button onclick="saveIndividualSetting('navAccountText', 'set-txt-nav-account')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Account Button Text)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 9. Tutorial Heading Text -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">৯. টিউটোরিয়াল পেজ হেডিং (Tutorial Section Title)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> ইউজার অ্যাপের ভিডিও টিউটোরিয়াল সেকশনের উপরের বড় হেডিং টেক্সট।
+                        </p>
+                        <div class="space-y-3">
+                            <input type="text" id="set-txt-tutorial-heading" class="flat-input" placeholder="Video Tutorials">
+                            <button onclick="saveIndividualSetting('tutorialHeadingText', 'set-txt-tutorial-heading')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Tutorial Heading)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 10. Package Rules Notice Box -->
+                    <div class="card">
+                        <h4 class="text-sm font-bold text-orange-400 uppercase mb-2">১০. প্যাকেজের একদম নিচের নোটিশ টেক্সট (Rules Notice)</h4>
+                        <p class="text-xs text-gray-300 mb-3 bg-dark-bg p-2.5 rounded-lg border border-dark-border">
+                            <i class="fas fa-info-circle text-orange-400 mr-1"></i> প্যাকেজের একদম নিচে 'নোটিশ:' এর পাশে ৩ডি কার্ডে স্পষ্ট কালো রঙের যে নোটিশ লেখাটি দেখাবে।
+                        </p>
+                        <div class="space-y-3">
+                            <textarea id="set-txt-rules-notice" class="flat-input h-20 resize-none" placeholder="কোন সমস্যায় পড়লে Telegram এ যোগাযোগ করবেন। তাহলে দ্রুত সমাধান পেয়ে যাবেন।"></textarea>
+                            <button onclick="saveIndividualSetting('rulesNotice', 'set-txt-rules-notice')" class="flat-btn w-full">
+                                <i class="fas fa-save mr-1"></i> সেভ করুন (Save Rules Notice)
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -881,7 +1195,7 @@
             }
             if(!db) return;
             if(viewId === 'dashboard') loadDashboardData();
-            if(viewId === 'settings' || viewId === 'popup') loadSettings();
+            if(viewId === 'settings' || viewId === 'popup' || viewId === 'app-logos' || viewId === 'app-texts') loadSettings();
             if(viewId === 'categories') loadCategories();
             if(viewId === 'services') loadServices();
             if(viewId === 'products') {
@@ -953,6 +1267,25 @@
                     setVal('set-launch-popup-img', d.launchPopupImg);
                     setVal('set-launch-popup-video', d.launchPopupVideo);
                     setVal('set-launch-popup-msg', d.launchPopupMsg);
+
+                    // Image settings page
+                    setVal('set-img-header-logo', d.logoUrl);
+                    setVal('set-img-loader-logo', d.loaderLogoUrl);
+                    setVal('set-img-login-logo', d.loginLogoUrl);
+                    setVal('set-img-toast-logo', d.toastLogoUrl);
+                    setVal('set-img-notif-logo', d.notificationLogoUrl);
+
+                    // Text settings page
+                    setVal('set-txt-playerid-placeholder', d.playerIdPlaceholder);
+                    setVal('set-txt-checkuid-btn', d.checkUidBtnText);
+                    setVal('set-txt-buynow-btn', d.buyNowBtnText);
+                    setVal('set-txt-nav-home', d.navHomeText);
+                    setVal('set-txt-nav-tutorial', d.navTutorialText);
+                    setVal('set-txt-nav-addmoney', d.navAddMoneyText);
+                    setVal('set-txt-nav-orders', d.navOrdersText);
+                    setVal('set-txt-nav-account', d.navAccountText);
+                    setVal('set-txt-tutorial-heading', d.tutorialHeadingText);
+                    setVal('set-txt-rules-notice', d.rulesNotice !== undefined && d.rulesNotice !== null ? d.rulesNotice : "কোন সমস্যায় পড়লে Telegram এ যোগাযোগ করবেন। তাহলে দ্রুত সমাধান পেয়ে যাবেন।");
                 }
             }).catch(dbError);
 
@@ -965,7 +1298,34 @@
                     const d = doc.data();
                     setVal('set-bkash-logo', d.bkash_modal_logo);
                     setVal('set-nagad-logo', d.nagad_modal_logo);
+                    setVal('set-img-bkash-logo', d.bkash_modal_logo);
+                    setVal('set-img-nagad-logo', d.nagad_modal_logo);
+                    setVal('set-img-rocket-logo', d.rocket_modal_logo);
                 }
+            }).catch(dbError);
+        }
+
+        function saveIndividualSetting(firestoreKey, inputId) {
+            if (!db) return;
+            const val = getVal(inputId);
+            showLoading();
+            db.collection('settings').doc('general').set({
+                [firestoreKey]: val
+            }, { merge: true }).then(() => {
+                hideLoading();
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'সেটিং সেভ হয়েছে!', timer: 1500, showConfirmButton: false });
+            }).catch(dbError);
+        }
+
+        function saveIndividualPaymentSetting(firestoreKey, inputId) {
+            if (!db) return;
+            const val = getVal(inputId);
+            showLoading();
+            db.collection('admin').doc('payment').set({
+                [firestoreKey]: val
+            }, { merge: true }).then(() => {
+                hideLoading();
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'পেমেন্ট লোগো সেভ হয়েছে!', timer: 1500, showConfirmButton: false });
             }).catch(dbError);
         }
 

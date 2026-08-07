@@ -175,12 +175,12 @@ class MainActivity : ComponentActivity() {
         // 1. Initialize Firebase safely
         initFirebaseSafely()
 
-        // 2. Initialize Notification Channel & Background Service safely
+        // 2. Initialize Notification Channel safely
         try {
             NotificationHelper.createNotificationChannel(this)
-            NotificationBackgroundService.startService(this)
+            NotificationBackgroundService.startService(this) // Stops any existing foreground service
         } catch (e: Throwable) {
-            Log.e("MainActivity", "Error creating notification channel or starting service: ${e.message}")
+            Log.e("MainActivity", "Error creating notification channel: ${e.message}")
         }
 
         // 3. Prompt for Push Notification Permission

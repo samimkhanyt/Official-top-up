@@ -77,6 +77,7 @@ object NotificationHelper {
         body: String?,
         imageUrl: String? = DEFAULT_LOGO_URL
     ) {
+        createNotificationChannel(context)
         val safeTitle = if (!title.isNullOrEmpty()) title else "Esp TopUp"
         val safeBody = body ?: ""
         val targetUrl = if (!imageUrl.isNullOrEmpty()) imageUrl else DEFAULT_LOGO_URL

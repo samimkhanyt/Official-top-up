@@ -164,57 +164,27 @@ class FirebaseBroadcastListener(private val context: Context) {
     }
 
     private fun isNotificationAlreadyProcessed(uniqueKey: String, title: String = "", body: String = ""): Boolean {
-        if (uniqueKey.isEmpty() && title.isEmpty() && body.isEmpty()) return false
+        if (uniqueKey.isEmpty()) return false
         val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val rawList = prefs.getString("processed_notif_keys_str", "") ?: ""
         val keys = rawList.split(",").toSet()
 
-        if (uniqueKey.isNotEmpty() && keys.contains(uniqueKey)) return true
+        if (keys.contains(uniqueKey)) return true
         if (existingLiveKeys.contains(uniqueKey) || existingBroadcastKeys.contains(uniqueKey)) return true
-
-        if (title.isNotEmpty() || body.isNotEmpty()) {
-            val contentKey = "content_" + "${title.trim().lowercase()}_${body.trim().lowercase()}".hashCode().toString()
-            if (keys.contains(contentKey)) return true
-        }
-
-        if (body.trim().length >= 4) {
-            val bodyKey = "body_" + body.trim().lowercase().hashCode().toString()
-            if (keys.contains(bodyKey)) return true
-        }
 
         return false
     }
 
     private fun markNotificationAsProcessed(uniqueKey: String, title: String = "", body: String = "") {
+        if (uniqueKey.isEmpty()) return
         val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val rawList = prefs.getString("processed_notif_keys_str", "") ?: ""
         var keys = rawList.split(",").filter { it.isNotEmpty() }.toMutableList()
 
-        var modified = false
-        if (uniqueKey.isNotEmpty() && !keys.contains(uniqueKey)) {
+        if (!keys.contains(uniqueKey)) {
             keys.add(uniqueKey)
-            modified = true
-        }
-
-        if (title.isNotEmpty() || body.isNotEmpty()) {
-            val contentKey = "content_" + "${title.trim().lowercase()}_${body.trim().lowercase()}".hashCode().toString()
-            if (!keys.contains(contentKey)) {
-                keys.add(contentKey)
-                modified = true
-            }
-        }
-
-        if (body.trim().length >= 4) {
-            val bodyKey = "body_" + body.trim().lowercase().hashCode().toString()
-            if (!keys.contains(bodyKey)) {
-                keys.add(bodyKey)
-                modified = true
-            }
-        }
-
-        if (modified) {
-            if (keys.size > 500) {
-                keys = keys.takeLast(300).toMutableList()
+            if (keys.size > 1000) {
+                keys = keys.takeLast(600).toMutableList()
             }
             prefs.edit().putString("processed_notif_keys_str", keys.joinToString(",")).apply()
         }
@@ -225,9 +195,12 @@ class FirebaseBroadcastListener(private val context: Context) {
             val key = snapshot.key ?: ""
             if (key.isEmpty()) return
 
-            val title = snapshot.child("title").getValue(String::class.java) ?: "Esp TopUp"
+            val title = snapshot.child("title").getValue(String::class.java)
+                ?: snapshot.child("name").getValue(String::class.java)
+                ?: "Esp TopUp"
             val message = snapshot.child("message").getValue(String::class.java)
                 ?: snapshot.child("body").getValue(String::class.java)
+                ?: snapshot.child("text").getValue(String::class.java)
                 ?: ""
 
             val uniqueKey = "live_$key"
@@ -242,14 +215,16 @@ class FirebaseBroadcastListener(private val context: Context) {
                 ?: NotificationHelper.DEFAULT_LOGO_URL
             val target = snapshot.child("target").getValue(String::class.java) ?: "all"
             val targetEmail = snapshot.child("targetEmail").getValue(String::class.java)?.lowercase()?.trim() ?: ""
-            val clientTimestamp = snapshot.child("clientTimestamp").getValue(Long::class.java)
+            val rawTime = snapshot.child("clientTimestamp").getValue(Long::class.java)
                 ?: snapshot.child("timestamp").getValue(Long::class.java)
+                ?: snapshot.child("time").getValue(Long::class.java)
                 ?: 0L
 
             if (message.isEmpty()) return
 
+            val timestampMs = if (rawTime in 1..9999999999L) rawTime * 1000L else rawTime
             val currentTime = System.currentTimeMillis()
-            val isRecent = (clientTimestamp == 0L) || (currentTime - clientTimestamp < 30 * 60 * 1000L)
+            val isRecent = (timestampMs == 0L) || (Math.abs(currentTime - timestampMs) < 24 * 60 * 60 * 1000L)
             val isTargetUser = (target == "all" || targetEmail.isEmpty() || targetEmail == "all" || isEmailForThisUser(targetEmail))
 
             // Mark processed immediately so it's never processed again

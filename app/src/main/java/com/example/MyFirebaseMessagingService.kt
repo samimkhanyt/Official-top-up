@@ -84,25 +84,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val safeTitle = title ?: "Esp TopUp"
         val safeBody = body ?: ""
         val msgId = remoteMessage.messageId ?: ""
-        val uniqueKey = "fcm_$msgId"
-        val contentKey = "content_" + "${safeTitle.trim().lowercase()}_${safeBody.trim().lowercase()}".hashCode().toString()
-        val bodyKey = if (safeBody.trim().length >= 4) "body_" + safeBody.trim().lowercase().hashCode().toString() else ""
+        val uniqueKey = if (msgId.isNotEmpty()) "fcm_$msgId" else "fcm_${safeTitle.hashCode()}_${safeBody.hashCode()}"
 
         val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val rawList = prefs.getString("processed_notif_keys_str", "") ?: ""
         val keysSet = rawList.split(",").toSet()
 
-        if ((uniqueKey.isNotEmpty() && keysSet.contains(uniqueKey)) || keysSet.contains(contentKey) || (bodyKey.isNotEmpty() && keysSet.contains(bodyKey))) {
-            Log.d("MyFCMService", "Notification already processed, skipping.")
+        if (keysSet.contains(uniqueKey)) {
+            Log.d("MyFCMService", "Notification $uniqueKey already processed, skipping.")
             return
         }
 
         var keys = rawList.split(",").filter { it.isNotEmpty() }.toMutableList()
-        if (uniqueKey.isNotEmpty() && !keys.contains(uniqueKey)) keys.add(uniqueKey)
-        if (!keys.contains(contentKey)) keys.add(contentKey)
-        if (bodyKey.isNotEmpty() && !keys.contains(bodyKey)) keys.add(bodyKey)
-        if (keys.size > 500) keys = keys.takeLast(300).toMutableList()
+        if (!keys.contains(uniqueKey)) keys.add(uniqueKey)
+        if (keys.size > 1000) keys = keys.takeLast(600).toMutableList()
         prefs.edit().putString("processed_notif_keys_str", keys.joinToString(",")).apply()
+
+        NotificationHelper.createNotificationChannel(applicationContext)
 
         NotificationHelper.showNotification(
             context = applicationContext,

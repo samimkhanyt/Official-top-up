@@ -1956,23 +1956,19 @@ let activeHistoryListener = null;
 let activeStatsListener = null;
 let activePaymentMethodListener = null;
 
-// Loader visibility is controlled by checkAndHideLoader() and updateNetworkStatus()
+// Loader visibility is controlled by checkAndHideLoader() and forceHideGlobalLoader()
 window.addEventListener('load', () => {
     setTimeout(() => {
-        if (navigator.onLine) {
-            isSliderLoaded = true;
-            isCategoriesLoaded = true;
-            checkAndHideLoader();
-        }
-    }, 1000);
-});
-setTimeout(() => {
-    if (navigator.onLine) {
         isSliderLoaded = true;
         isCategoriesLoaded = true;
         checkAndHideLoader();
-    }
-}, 1200);
+    }, 500);
+});
+setTimeout(() => {
+    isSliderLoaded = true;
+    isCategoriesLoaded = true;
+    checkAndHideLoader();
+}, 800);
 
 function trackImagesLoading(containerElement, callback) {
     const images = containerElement.querySelectorAll('img');
@@ -5220,30 +5216,14 @@ function updateNetworkStatus(online) {
     const statusBox = document.getElementById('net-status-box');
     const statusText = document.getElementById('net-status-text');
     const statusIcon = document.getElementById('net-status-icon');
-    const loader = document.getElementById('global-page-loader');
 
     if (!statusBox) return;
 
     if (!isOnline) {
-        if (loader) {
-            loader.classList.remove('hidden', 'fade-out');
-            loader.style.display = 'flex';
-            loader.style.opacity = '1';
-        }
         statusBox.classList.remove('hidden', 'online');
         statusBox.classList.add('offline');
-        statusIcon.innerHTML = `<i class="fas fa-wifi-slash"></i>`;
-        statusText.innerText = "Internet Connect";
-
-        if (!offlineExitTimer) {
-            offlineExitTimer = setTimeout(() => {
-                if (!navigator.onLine) {
-                    if (window.Android && typeof window.Android.exitApp === 'function') {
-                        window.Android.exitApp();
-                    }
-                }
-            }, 4000);
-        }
+        if (statusIcon) statusIcon.innerHTML = `<i class="fas fa-wifi-slash"></i>`;
+        if (statusText) statusText.innerText = "Internet Connect";
     } else {
         if (offlineExitTimer) {
             clearTimeout(offlineExitTimer);
@@ -5251,12 +5231,12 @@ function updateNetworkStatus(online) {
         }
         statusBox.classList.remove('hidden', 'offline');
         statusBox.classList.add('online');
-        statusIcon.innerHTML = `<i class="fas fa-check-circle"></i>`;
-        statusText.innerText = "Internet Success";
+        if (statusIcon) statusIcon.innerHTML = `<i class="fas fa-check-circle"></i>`;
+        if (statusText) statusText.innerText = "Internet Success";
 
         setTimeout(() => {
-            checkAndHideLoader();
-        }, 1200);
+            statusBox.classList.add('hidden');
+        }, 2000);
     }
 }
 
@@ -5264,31 +5244,28 @@ window.addEventListener('online', () => updateNetworkStatus(true));
 window.addEventListener('offline', () => updateNetworkStatus(false));
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (!navigator.onLine) {
-        updateNetworkStatus(false);
-    }
+    setTimeout(forceHideGlobalLoader, 600);
 });
 
-function checkAndHideLoader() {
-    if (!navigator.onLine) {
-        updateNetworkStatus(false);
-        return;
+function forceHideGlobalLoader() {
+    const loader = document.getElementById('global-page-loader');
+    if (loader) {
+        loader.classList.add('fade-out');
+        setTimeout(() => { 
+            loader.style.display = 'none'; 
+            loader.classList.add('hidden');
+        }, 300);
     }
+    if (window.pendingPopupData) {
+        showLaunchPopup(window.pendingPopupData);
+        window.pendingPopupData = null;
+    }
+}
 
-    if (isSliderLoaded && isCategoriesLoaded) {
-        const loader = document.getElementById('global-page-loader');
-        if (loader && !loader.classList.contains('fade-out')) {
-            loader.classList.add('fade-out');
-            setTimeout(() => { 
-                loader.style.display = 'none'; 
-                loader.classList.add('hidden');
-            }, 400);
-        }
-        if (window.pendingPopupData) {
-            showLaunchPopup(window.pendingPopupData);
-            window.pendingPopupData = null;
-        }
-    }
+function checkAndHideLoader() {
+    isSliderLoaded = true;
+    isCategoriesLoaded = true;
+    forceHideGlobalLoader();
 }
 
 function showSection(sectionId) {

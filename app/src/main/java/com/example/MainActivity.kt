@@ -21,9 +21,11 @@ import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import java.io.ByteArrayInputStream
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -795,6 +797,23 @@ class MainActivity : ComponentActivity() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url == null) return false
                     return handleUrlScheme(url)
+                }
+
+                override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
+                    val urlStr = request?.url?.toString() ?: ""
+                    if (urlStr.contains("undefined") || urlStr.contains("null")) {
+                        return WebResourceResponse("image/png", "UTF-8", ByteArrayInputStream(ByteArray(0)))
+                    }
+                    return super.shouldInterceptRequest(view, request)
+                }
+
+                @Deprecated("Deprecated in Java")
+                override fun shouldInterceptRequest(view: WebView?, url: String?): WebResourceResponse? {
+                    val urlStr = url ?: ""
+                    if (urlStr.contains("undefined") || urlStr.contains("null")) {
+                        return WebResourceResponse("image/png", "UTF-8", ByteArrayInputStream(ByteArray(0)))
+                    }
+                    return super.shouldInterceptRequest(view, url)
                 }
             }
 

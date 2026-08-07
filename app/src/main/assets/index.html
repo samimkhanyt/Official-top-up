@@ -715,7 +715,7 @@
                 </button>
 
                 <div id="popup-img-container" class="w-full bg-slate-900 overflow-hidden hidden rounded-t-3xl">
-                    <img id="popup-img" src="" class="w-full h-auto object-cover max-h-[70vh] block mx-auto">
+                    <img id="popup-img" src="logo.png" class="w-full h-auto object-cover max-h-[70vh] block mx-auto">
                 </div>
 
                 <div id="popup-text-wrapper" class="w-full p-4 sm:p-6 flex flex-col items-start text-left space-y-2 hidden">
@@ -1038,7 +1038,7 @@
 
         <section id="topup-sec" class="hidden animate-fade-in pb-10 bg-slate-50">
             <div class="bg-white p-3 rounded-xl shadow-sm flex items-center gap-4 mb-4 border border-gray-100 mx-2 mt-2">
-                <img id="topup-game-img" src="" class="w-16 h-16 rounded-xl object-cover shadow-sm">
+                <img id="topup-game-img" src="logo.png" class="w-16 h-16 rounded-xl object-cover shadow-sm">
                 <div>
                     <h3 class="font-bold text-gray-800 text-base" id="topup-game-title">Game Name</h3>
                     <p class="text-xs text-gray-700 font-medium" id="topup-sub-title">Game / Topup</p>
@@ -1234,7 +1234,7 @@
                          <i class="fas fa-arrow-left text-lg"></i>
                     </button>
                     <div class="text-right">
-                        <img src="" id="step2-logo" class="h-8 object-contain inline-block">
+                        <img src="logo.png" id="step2-logo" class="h-8 object-contain inline-block">
                     </div>
                     <button onclick="showSec('home')" class="text-gray-400">
                         <i class="fas fa-times"></i>
@@ -1243,7 +1243,7 @@
 
                 <div class="flex-1 flex flex-col justify-center items-center px-6">
                     <div class="bg-white rounded-full w-32 h-32 flex items-center justify-center shadow-sm border border-gray-100 mb-6 p-4">
-                        <img src="" id="step2-center-logo" class="w-full object-contain">
+                        <img src="logo.png" id="step2-center-logo" class="w-full object-contain">
                     </div>
                     
                     <h2 class="text-gray-600 font-medium mb-8 text-lg">Auto Pay</h2>
@@ -1281,13 +1281,13 @@
                 </div>
 
                 <div class="text-center py-6">
-                    <img id="pay-method-logo" src="" class="h-12 mx-auto object-contain drop-shadow-sm">
+                    <img id="pay-method-logo" src="logo.png" class="h-12 mx-auto object-contain drop-shadow-sm">
                 </div>
 
                 <div class="px-4">
                     <div class="bg-white rounded-xl p-4 flex items-center gap-4 mb-4 shadow-sm">
                         <div class="w-12 h-12 rounded-full border border-gray-100 p-1">
-                            <img id="pay-site-logo-small" src="" class="w-full h-full rounded-full object-cover">
+                            <img id="pay-site-logo-small" src="logo.png" class="w-full h-full rounded-full object-cover">
                         </div>
                         <div>
                             <p class="text-sm text-gray-800 font-bold">Auto Pay</p>
@@ -1957,18 +1957,12 @@ let activeStatsListener = null;
 let activePaymentMethodListener = null;
 
 // Loader visibility is controlled by checkAndHideLoader() and forceHideGlobalLoader()
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        isSliderLoaded = true;
-        isCategoriesLoaded = true;
-        checkAndHideLoader();
-    }, 500);
-});
+// Safeguard timer in case data or network is slow/empty
 setTimeout(() => {
     isSliderLoaded = true;
     isCategoriesLoaded = true;
     checkAndHideLoader();
-}, 800);
+}, 7000);
 
 function trackImagesLoading(containerElement, callback) {
     const images = containerElement.querySelectorAll('img');
@@ -4480,10 +4474,20 @@ function initSliderWithReset(totalSlides) {
     const wrapper = document.getElementById('custom-slider-wrapper');
     if (!wrapper || totalSlides <= 1) return;
 
+    let slideDirection = 1; // 1 = forward, -1 = reverse
+
     function slideTo(index) {
-        if (index >= totalSlides) currentSlideIndex = 0;
-        else if (index < 0) currentSlideIndex = totalSlides - 1;
-        else currentSlideIndex = index;
+        if (index >= totalSlides) {
+            slideDirection = -1;
+            currentSlideIndex = totalSlides - 2;
+            if (currentSlideIndex < 0) currentSlideIndex = 0;
+        } else if (index < 0) {
+            slideDirection = 1;
+            currentSlideIndex = 1;
+            if (currentSlideIndex >= totalSlides) currentSlideIndex = 0;
+        } else {
+            currentSlideIndex = index;
+        }
 
         wrapper.style.transition = "transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)";
         wrapper.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
@@ -4497,39 +4501,82 @@ function initSliderWithReset(totalSlides) {
     function startAutoPlay() {
         stopAutoPlay();
         sliderTimer = setInterval(() => {
-            slideTo(currentSlideIndex + 1);
+            slideTo(currentSlideIndex + slideDirection);
         }, 4000);
     }
 
     function stopAutoPlay() {
-        if (sliderTimer) clearInterval(sliderTimer);
+        if (sliderTimer) {
+            clearInterval(sliderTimer);
+            sliderTimer = null;
+        }
+    }
+
+    function handleDragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        if (startX && moveX) {
+            const diff = startX - moveX;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0) {
+                    slideDirection = 1;
+                    slideTo(currentSlideIndex + 1);
+                } else {
+                    slideDirection = -1;
+                    slideTo(currentSlideIndex - 1);
+                }
+            } else {
+                slideTo(currentSlideIndex);
+            }
+        } else {
+            slideTo(currentSlideIndex);
+        }
+        startX = null; moveX = null;
+        startAutoPlay();
     }
 
     wrapper.addEventListener('touchstart', (e) => {
         stopAutoPlay();
         isDragging = true;
         startX = e.touches[0].clientX;
+        moveX = startX;
         wrapper.style.transition = "none";
-    });
+    }, { passive: true });
 
     wrapper.addEventListener('touchmove', (e) => {
         if (!isDragging) return;
         moveX = e.touches[0].clientX;
+        const diff = startX - moveX;
+        if (wrapper.clientWidth > 0) {
+            const currentOffset = -currentSlideIndex * wrapper.clientWidth - diff;
+            wrapper.style.transform = `translateX(${currentOffset}px)`;
+        }
+    }, { passive: true });
+
+    wrapper.addEventListener('touchend', handleDragEnd);
+    wrapper.addEventListener('touchcancel', handleDragEnd);
+
+    wrapper.addEventListener('mousedown', (e) => {
+        stopAutoPlay();
+        isDragging = true;
+        startX = e.clientX;
+        moveX = startX;
+        wrapper.style.transition = "none";
     });
 
-    wrapper.addEventListener('touchend', () => {
-        isDragging = false;
-        if (startX && moveX) {
-            const diff = startX - moveX;
-            if (Math.abs(diff) > 50) {
-                if (diff > 0) slideTo(currentSlideIndex + 1);
-                else slideTo(currentSlideIndex - 1);
-            } else {
-                slideTo(currentSlideIndex);
-            }
+    wrapper.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        moveX = e.clientX;
+        const diff = startX - moveX;
+        if (wrapper.clientWidth > 0) {
+            const currentOffset = -currentSlideIndex * wrapper.clientWidth - diff;
+            wrapper.style.transform = `translateX(${currentOffset}px)`;
         }
-        startX = null; moveX = null;
-        startAutoPlay();
+    });
+
+    wrapper.addEventListener('mouseup', handleDragEnd);
+    wrapper.addEventListener('mouseleave', () => {
+        if (isDragging) handleDragEnd();
     });
 
     startAutoPlay();
@@ -5209,34 +5256,54 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 let isOnline = navigator.onLine;
-let offlineExitTimer = null;
 
-function updateNetworkStatus(online) {
-    isOnline = online;
+function showOfflineLoader() {
+    const loader = document.getElementById('global-page-loader');
     const statusBox = document.getElementById('net-status-box');
     const statusText = document.getElementById('net-status-text');
     const statusIcon = document.getElementById('net-status-icon');
 
-    if (!statusBox) return;
+    if (loader) {
+        loader.classList.remove('fade-out', 'hidden');
+        loader.style.display = 'flex';
+        loader.style.opacity = '1';
+        loader.style.pointerEvents = 'auto';
+    }
 
-    if (!isOnline) {
+    if (statusBox) {
         statusBox.classList.remove('hidden', 'online');
         statusBox.classList.add('offline');
         if (statusIcon) statusIcon.innerHTML = `<i class="fas fa-wifi-slash"></i>`;
-        if (statusText) statusText.innerText = "Internet Connect";
-    } else {
-        if (offlineExitTimer) {
-            clearTimeout(offlineExitTimer);
-            offlineExitTimer = null;
-        }
+        if (statusText) statusText.innerText = "No Internet Connection. Please check your network connection.";
+    }
+}
+
+function showOnlineLoader() {
+    const statusBox = document.getElementById('net-status-box');
+    const statusText = document.getElementById('net-status-text');
+    const statusIcon = document.getElementById('net-status-icon');
+
+    if (statusBox) {
         statusBox.classList.remove('hidden', 'offline');
         statusBox.classList.add('online');
         if (statusIcon) statusIcon.innerHTML = `<i class="fas fa-check-circle"></i>`;
-        if (statusText) statusText.innerText = "Internet Success";
+        if (statusText) statusText.innerText = "Internet Connected";
 
         setTimeout(() => {
             statusBox.classList.add('hidden');
-        }, 2000);
+            checkAndHideLoader();
+        }, 1200);
+    } else {
+        checkAndHideLoader();
+    }
+}
+
+function updateNetworkStatus(online) {
+    isOnline = online;
+    if (!isOnline) {
+        showOfflineLoader();
+    } else {
+        showOnlineLoader();
     }
 }
 
@@ -5244,13 +5311,23 @@ window.addEventListener('online', () => updateNetworkStatus(true));
 window.addEventListener('offline', () => updateNetworkStatus(false));
 
 document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(forceHideGlobalLoader, 600);
+    if (!navigator.onLine) {
+        showOfflineLoader();
+    } else {
+        checkAndHideLoader();
+    }
 });
 
 function forceHideGlobalLoader() {
+    if (!navigator.onLine) {
+        showOfflineLoader();
+        return;
+    }
     const loader = document.getElementById('global-page-loader');
     if (loader) {
         loader.classList.add('fade-out');
+        loader.style.opacity = '0';
+        loader.style.pointerEvents = 'none';
         setTimeout(() => { 
             loader.style.display = 'none'; 
             loader.classList.add('hidden');
@@ -5263,9 +5340,13 @@ function forceHideGlobalLoader() {
 }
 
 function checkAndHideLoader() {
-    isSliderLoaded = true;
-    isCategoriesLoaded = true;
-    forceHideGlobalLoader();
+    if (!navigator.onLine) {
+        showOfflineLoader();
+        return;
+    }
+    if (isSliderLoaded && isCategoriesLoaded) {
+        forceHideGlobalLoader();
+    }
 }
 
 function showSection(sectionId) {
@@ -5330,12 +5411,6 @@ function handleNativeBack() {
     const googleAccountModal = document.getElementById('google-account-chooser-modal');
     if (googleAccountModal && !googleAccountModal.classList.contains('hidden')) {
         closeGoogleAccountChooserModal();
-        return 'true';
-    }
-
-    const userDepModal = document.getElementById('user-deposit-history-modal');
-    if (userDepModal && !userDepModal.classList.contains('hidden')) {
-        hideUserDepositHistoryModal();
         return 'true';
     }
 

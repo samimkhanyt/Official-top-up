@@ -11,8 +11,8 @@ object FirebaseInitHelper {
         try {
             if (FirebaseApp.getApps(context).isEmpty()) {
                 val options = FirebaseOptions.Builder()
-                    .setApiKey("AIzaSyA3B7DZ_JeY-a33zdixKmZ6oQrU2iEVsEk")
-                    .setApplicationId("1:521003542655:web:bbabcf2f24a0eaeeef774a")
+                    .setApiKey("AIzaSyDxWuz_ax1qwqm_P8b9xczejRIOD4CB5Xk")
+                    .setApplicationId("1:521003542655:android:7d5c0dbf93cab8bcef774a")
                     .setProjectId("samim-firebase")
                     .setGcmSenderId("521003542655")
                     .setDatabaseUrl("https://samim-firebase-default-rtdb.firebaseio.com")

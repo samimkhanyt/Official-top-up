@@ -1,6 +1,6 @@
 {
-  "name": "Esp TopUp",
-  "description": "Esp TopUp Android Webview App",
+  "name": "ESP TopUp",
+  "description": "ESP TopUp mobile application with dynamic website loading and real-time integration",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

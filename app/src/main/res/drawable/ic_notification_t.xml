@@ -4,8 +4,8 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-    <!-- ESP TopUp Diamond Badge Emblem -->
+    <!-- Bold letter 'T' for notifications -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M12,2 L2,8 L12,22 L22,8 Z M12,4.5 L18.5,8.4 L12,18.5 L5.5,8.4 Z M12,7 L8,11 L12,15 L16,11 Z"/>
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3,4h18v4.5h-6.75v11.5h-4.5V8.5H3V4z" />
 </vector>

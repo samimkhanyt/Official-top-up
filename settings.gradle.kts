@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Esp TopUp"
+rootProject.name = "ESP TopUp"
 
 include(":app")
